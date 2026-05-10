@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DP·Trace BR — v0.2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<style>
+  :root {
+    --bg: #0d1117; --bg-2: #161b22; --bg-3: #1c2230;
+    --line: #2a3140; --line-soft: #1e2532;
+    --ink: #e6edf3; --ink-dim: #8b949e; --ink-faint: #6e7681;
+    --accent: #f97316; --accent-soft: #f9731620;
+    --good: #3fb950; --warn: #d29922; --bad: #f85149; --info: #58a6ff;
+    --invented: #b87aff; --invented-soft: #b87aff15;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter Tight', -apple-system, sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; line-height: 1.5; }
+
+  header {
+    border-bottom: 1px solid var(--line); padding: 18px 32px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--bg-2); position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 14px; }
+  .logo-mark { width: 38px; height: 38px; background: var(--accent); display: grid; place-items: center; font-weight: 800; font-size: 18px; color: var(--bg); transform: skew(-8deg); }
+  .logo-text { font-weight: 700; font-size: 18px; letter-spacing: -0.02em; }
+  .logo-text span { color: var(--accent); }
+  .version { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); background: var(--bg-3); padding: 4px 8px; border: 1px solid var(--line); border-radius: 3px; }
+  .tagline { font-size: 12px; color: var(--ink-dim); text-align: right; line-height: 1.3; }
+  .tagline strong { color: var(--ink); }
+  .lang-detected { display: inline-flex; align-items: center; gap: 6px; background: var(--bg-3); padding: 3px 8px; border-radius: 3px; border: 1px solid var(--line); font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-dim); }
+
+  main { max-width: 1280px; margin: 0 auto; padding: 32px; }
+
+  .upload-zone { border: 2px dashed var(--line); border-radius: 8px; padding: 60px 32px; text-align: center; background: var(--bg-2); transition: all 0.2s; cursor: pointer; margin-bottom: 24px; }
+  .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: var(--accent-soft); }
+  .upload-zone svg { width: 48px; height: 48px; color: var(--ink-faint); margin-bottom: 16px; }
+  .upload-zone h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .upload-zone p { color: var(--ink-dim); font-size: 14px; }
+  .upload-zone p span { color: var(--accent); font-weight: 600; }
+  .upload-zone input { display: none; }
+  .upload-zone .langs { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+  .upload-zone .langs span { font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--bg-3); padding: 3px 8px; border-radius: 3px; color: var(--ink-faint); border: 1px solid var(--line); }
+  .upload-zone .langs span.active { color: var(--accent); border-color: var(--accent); }
+
+  .status { padding: 14px 18px; background: var(--bg-3); border: 1px solid var(--line); border-left: 3px solid var(--info); border-radius: 4px; margin-bottom: 24px; font-size: 13px; font-family: 'JetBrains Mono', monospace; color: var(--ink-dim); display: none; }
+  .status.active { display: block; }
+  .status.error { border-left-color: var(--bad); color: var(--ink); }
+  .status.success { border-left-color: var(--good); color: var(--ink); }
+
+  .report { display: none; }
+  .report.active { display: block; }
+
+  .tabs { display: flex; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+  .tab { padding: 14px 24px; font-family: 'Inter Tight', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; border: none; background: transparent; color: var(--ink-dim); border-bottom: 3px solid transparent; margin-bottom: -1px; transition: all 0.15s; display: inline-flex; align-items: center; gap: 8px; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab .badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 6px; border-radius: 3px; background: var(--bg-3); color: var(--ink-faint); }
+  .tab.active .badge { background: var(--accent); color: var(--bg); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .fidelity-banner { padding: 12px 18px; background: rgba(63,185,80,0.08); border: 1px solid rgba(63,185,80,0.3); border-left: 3px solid var(--good); border-radius: 4px; margin-bottom: 20px; font-size: 13px; display: flex; align-items: center; gap: 12px; }
+  .fidelity-banner svg { width: 18px; height: 18px; color: var(--good); flex-shrink: 0; }
+  .fidelity-banner strong { color: var(--good); }
+
+  .toggle-bar { display: flex; gap: 8px; margin-bottom: 16px; background: var(--bg-2); padding: 6px; border-radius: 6px; border: 1px solid var(--line); width: fit-content; }
+  .toggle-btn { padding: 6px 14px; font-family: 'Inter Tight', sans-serif; font-size: 12px; font-weight: 600; border: none; background: transparent; color: var(--ink-dim); border-radius: 3px; cursor: pointer; }
+  .toggle-btn.active { background: var(--accent); color: var(--bg); }
+
+  .fidelity-table { width: 100%; border-collapse: collapse; background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin-bottom: 24px; }
+  .fidelity-table th { background: var(--bg-3); color: var(--ink-faint); text-transform: uppercase; font-size: 10px; letter-spacing: 0.12em; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .fidelity-table td { padding: 10px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: top; }
+  .fidelity-table tr:last-child td { border: 0; }
+  .col-original { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-faint); width: 35%; }
+  .col-pt { color: var(--ink); width: 35%; }
+  .col-value { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-weight: 600; }
+  body.lang-only-pt .col-original { display: none; }
+  body.lang-only-pt th.h-original { display: none; }
+
+  .section-fidelity { background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; margin-bottom: 20px; overflow: hidden; }
+  .section-fidelity-header { padding: 12px 16px; background: var(--bg-3); border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .section-fidelity-header .pt { color: var(--ink); font-family: 'Inter Tight', sans-serif; }
+  .section-fidelity-header .orig { color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; font-weight: 400; font-size: 11px; }
+  body.lang-only-pt .section-fidelity-header .orig { display: none; }
+  .section-fidelity-body .fidelity-table { border: 0; border-radius: 0; margin: 0; background: transparent; }
+
+  .diagnostic-banner { padding: 12px 18px; background: var(--invented-soft); border: 1px solid var(--invented); border-left: 3px solid var(--invented); border-radius: 4px; margin-bottom: 20px; font-size: 13px; display: flex; align-items: center; gap: 12px; }
+  .diagnostic-banner svg { width: 18px; height: 18px; color: var(--invented); flex-shrink: 0; }
+  .diagnostic-banner strong { color: var(--invented); }
+
+  .invented-tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 2px 6px; border-radius: 2px; background: var(--invented-soft); color: var(--invented); border: 1px solid var(--invented); margin-left: 8px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; vertical-align: middle; }
+
+  .summary-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 32px; }
+  .card { background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; padding: 24px; }
+  .card h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-faint); margin-bottom: 16px; font-weight: 600; }
+  .card .field { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px; }
+  .card .field:last-child { border: 0; }
+  .card .field-label { color: var(--ink-dim); }
+  .card .field-value { color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right; }
+
+  .score-card { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .score-number { font-size: 84px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; margin: 8px 0; }
+  .score-number.excelente { color: var(--good); }
+  .score-number.bom { color: var(--info); }
+  .score-number.atencao { color: var(--warn); }
+  .score-number.critico { color: var(--bad); }
+  .score-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-faint); font-weight: 600; }
+  .score-class { margin-top: 8px; font-size: 13px; color: var(--ink-dim); font-style: italic; }
+
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 11px; font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+  .pill.ok { background: rgba(63,185,80,0.12); color: var(--good); }
+  .pill.warn { background: rgba(210,153,34,0.15); color: var(--warn); }
+  .pill.bad { background: rgba(248,81,73,0.15); color: var(--bad); }
+  .pill.info { background: rgba(88,166,255,0.12); color: var(--info); }
+
+  .subjects table { width: 100%; border-collapse: collapse; background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .subjects th, .subjects td { padding: 12px 16px; text-align: left; font-size: 13px; }
+  .subjects th { background: var(--bg-3); color: var(--ink-faint); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.1em; border-bottom: 1px solid var(--line); }
+  .subjects td { border-bottom: 1px solid var(--line-soft); }
+  .subjects tr:last-child td { border: 0; }
+  .addrs { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink); }
+
+  .livelist { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-top: 12px; }
+  .livelist-cell { aspect-ratio: 1; display: grid; place-items: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; border: 1px solid var(--line-soft); border-radius: 2px; color: var(--ink-faint); background: transparent; }
+  .livelist-cell.dx { background: rgba(63,185,80,0.18); color: var(--ink); border-color: var(--good); }
+  .livelist-cell.master { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+  .livelist-cell.lost { background: rgba(248,81,73,0.18); color: var(--bad); border-color: var(--bad); }
+  .livelist-legend { display: flex; gap: 16px; margin-top: 12px; font-size: 12px; color: var(--ink-dim); }
+  .livelist-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .livelist-legend .swatch { width: 12px; height: 12px; border-radius: 2px; border: 1px solid var(--line); }
+
+  .bargraph { display: flex; align-items: flex-end; gap: 3px; padding: 16px 0 32px; overflow-x: auto; border-bottom: 1px solid var(--line-soft); margin-top: 12px; }
+  .bar-col { flex: 0 0 auto; width: 28px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar { width: 100%; background: var(--good); border-radius: 1px 1px 0 0; min-height: 4px; }
+  .bar.warn { background: var(--warn); }
+  .bar.bad { background: var(--bad); }
+  .bar:hover { opacity: 0.7; cursor: help; }
+  .bar-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink-faint); margin-top: 4px; transform: rotate(-45deg) translateX(-6px); transform-origin: top right; white-space: nowrap; }
+  .bar-thresholds { margin-top: 12px; font-size: 12px; color: var(--ink-dim); display: flex; gap: 24px; flex-wrap: wrap; }
+
+  .devices-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+  .devices-table th, .devices-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line-soft); }
+  .devices-table th { background: var(--bg-3); color: var(--ink-faint); text-transform: uppercase; font-size: 10px; letter-spacing: 0.1em; }
+  .devices-table td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
+  .devices-table tr.has-issue { background: rgba(248,81,73,0.05); }
+  .devices-table tr.has-issue td:first-child::before { content: "⚠ "; color: var(--bad); }
+
+  .notes-list { list-style: none; padding: 0; }
+  .notes-list li { padding: 10px 14px; background: var(--bg-3); border-left: 2px solid var(--info); margin-bottom: 8px; font-size: 13px; color: var(--ink-dim); border-radius: 0 3px 3px 0; }
+
+  .actions { display: flex; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line); }
+  .btn { padding: 12px 24px; font-family: 'Inter Tight', sans-serif; font-weight: 600; font-size: 14px; border-radius: 4px; cursor: pointer; border: 1px solid var(--line); background: var(--bg-2); color: var(--ink); display: inline-flex; align-items: center; gap: 8px; }
+  .btn:hover { background: var(--bg-3); border-color: var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-faint); margin: 32px 0 12px; font-weight: 600; padding-bottom: 8px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+  .section-title .count { background: var(--bg-3); padding: 2px 8px; border-radius: 11px; color: var(--ink); font-size: 11px; }
+
+  footer { text-align: center; padding: 32px; color: var(--ink-faint); font-size: 12px; border-top: 1px solid var(--line); margin-top: 64px; }
+
+  @media (max-width: 768px) {
+    .summary-grid { grid-template-columns: 1fr; }
+    main { padding: 16px; } header { padding: 14px 16px; }
+    .tagline { display: none; } .livelist { grid-template-columns: repeat(8, 1fr); }
+    .col-original { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">DP</div>
+    <div>
+      <div class="logo-text">DP·Trace<span> BR</span></div>
+      <div style="font-size:11px;color:var(--ink-faint);font-family:'JetBrains Mono',monospace">PROFIBUS DP analyzer</div>
+    </div>
+    <span class="version">v0.2</span>
+    <span class="lang-detected" id="lang-detected" style="display:none">🌐 <span id="lang-detected-name">—</span></span>
+  </div>
+  <div class="tagline"><strong>Confiabilidade sobre invenção</strong><br>cópia fiel + diagnóstico opcional</div>
+</header>
+
+<main>
+  <label for="pdfFile" class="upload-zone" id="dropZone">
+    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13.5l3 3m0 0l3-3m-3 3v-6m1.06-4.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
+    <h2>Solte o relatório do ProfiTrace aqui</h2>
+    <p>ou <span>clique para selecionar</span> · arquivo <span>.pdf</span></p>
+    <div class="langs">
+      <span id="lang-en">EN</span>
+      <span id="lang-fr">FR (em breve)</span>
+      <span id="lang-es">ES (em breve)</span>
+    </div>
+    <input type="file" id="pdfFile" accept="application/pdf">
+  </label>
+
+  <div class="status" id="status"></div>
+
+  <div class="report" id="report">
+    <div class="tabs">
+      <button class="tab active" data-tab="fiel">✓ Cópia Fiel <span class="badge">PT-BR</span></button>
+      <button class="tab" data-tab="diag">⚙ Diagnóstico <span class="badge">app</span></button>
+    </div>
+
+    <div class="tab-panel active" id="panel-fiel">
+      <div class="fidelity-banner">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div><strong>Cópia fiel garantida.</strong> Cada linha mostra o rótulo original do ProfiTrace, sua tradução PT-BR e o valor extraído sem alteração. Nenhum dado abaixo é interpretação ou invenção do app.</div>
+      </div>
+      <div class="toggle-bar">
+        <button class="toggle-btn active" data-view="both">Original + PT-BR</button>
+        <button class="toggle-btn" data-view="pt">Só PT-BR</button>
+      </div>
+      <div id="fiel-content"></div>
+    </div>
+
+    <div class="tab-panel" id="panel-diag">
+      <div class="diagnostic-banner">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+        <div><strong>Conteúdo gerado pelo DP·Trace BR.</strong> Score, cores e observações abaixo são interpretações do app — não constam no PDF original. Use como apoio, valide com seu julgamento técnico.</div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="card">
+          <h3>Identificação <span class="invented-tag">do PDF</span></h3>
+          <div class="field"><span class="field-label">Rede</span><span class="field-value" id="f-network">—</span></div>
+          <div class="field"><span class="field-label">Local</span><span class="field-value" id="f-location">—</span></div>
+          <div class="field"><span class="field-label">Inspetor</span><span class="field-value" id="f-inspector">—</span></div>
+          <div class="field"><span class="field-label">Empresa</span><span class="field-value" id="f-company">—</span></div>
+          <div class="field"><span class="field-label">Data</span><span class="field-value" id="f-date">—</span></div>
+          <div class="field"><span class="field-label">Taxa de transmissão</span><span class="field-value" id="f-speed">—</span></div>
+          <div class="field"><span class="field-label">Mestres / Escravos</span><span class="field-value" id="f-msr">—</span></div>
+          <div class="field"><span class="field-label">Tempo de ciclo</span><span class="field-value" id="f-cycle">—</span></div>
+        </div>
+        <div class="card score-card">
+          <div class="score-label">Saúde da rede <span class="invented-tag">app</span></div>
+          <div class="score-number" id="f-score">—</div>
+          <div class="score-class" id="f-class">—</div>
+          <div style="margin-top:14px" id="f-conclusion"></div>
+        </div>
+      </div>
+
+      <div class="section-title">Tested subjects (do PDF) <span class="count">7</span></div>
+      <div class="subjects"><table><thead><tr><th>Verificação</th><th>Status</th><th>Endereços</th></tr></thead><tbody id="ts-body"></tbody></table></div>
+
+      <div class="section-title">Live list (do PDF) <span class="count" id="ll-count">—</span></div>
+      <div class="livelist" id="livelist"></div>
+      <div class="livelist-legend">
+        <span><span class="swatch" style="background:var(--accent)"></span> Mestre</span>
+        <span><span class="swatch" style="background:rgba(63,185,80,0.18);border-color:var(--good)"></span> Em DX</span>
+        <span><span class="swatch" style="background:rgba(248,81,73,0.18);border-color:var(--bad)"></span> Perdido</span>
+        <span><span class="swatch"></span> Sem atividade</span>
+      </div>
+
+      <div class="section-title">Tensão diferencial AB <span class="invented-tag">cores: app</span> <span class="count" id="bg-count">—</span></div>
+      <div class="bargraph" id="bargraph"></div>
+      <div class="bar-thresholds">
+        <span><span style="display:inline-block;width:10px;height:10px;background:var(--good);margin-right:6px"></span> ≥ 5,5 V — saudável</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:var(--warn);margin-right:6px"></span> 4,0–5,5 V — atenção</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:var(--bad);margin-right:6px"></span> &lt; 4,0 V — crítico</span>
+      </div>
+
+      <div class="section-title">Detalhe dos dispositivos (do PDF) <span class="count" id="dev-count">—</span></div>
+      <table class="devices-table">
+        <thead><tr><th>Endereço</th><th>Tipo</th><th>Fabricante / Modelo</th><th class="num">I/O (bytes)</th><th class="num">Sinal V min/máx/last</th><th class="num">Diag/Retry/Lost</th></tr></thead>
+        <tbody id="dev-body"></tbody>
+      </table>
+
+      <div class="section-title">Observações <span class="invented-tag">app</span></div>
+      <ul class="notes-list" id="notes"></ul>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="btnPDF">📄 Exportar PDF</button>
+      <button class="btn primary" id="btnDOCX">📝 Exportar Word</button>
+      <button class="btn" id="btnReset">↺ Carregar outro relatório</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  DP·Trace BR — análise PROFIBUS DP a partir de exports ProfiTrace<br>
+  <span style="display:inline-block;margin-top:8px;color:var(--ink-dim);font-family:'JetBrains Mono',monospace">[Cópia fiel: zero invenção · Diagnóstico: marcado explicitamente]</span>
+</footer>
+
+<script>
+
+const DICT = {
+  network_name:        { en: 'Network name',                       fr: 'Nom du réseau',                  es: 'Nombre de la red',               pt: 'Nome da rede' },
+  location:            { en: 'Location',                           fr: 'Emplacement',                    es: 'Ubicación',                      pt: 'Localização' },
+  measurement_dur:     { en: 'Measurement duration',               fr: 'Durée de la mesure',             es: 'Duración de la medición',        pt: 'Duração da medição' },
+  project_details:     { en: 'Project details summary',            fr: 'Résumé des détails du projet',   es: 'Resumen de detalles del proyecto', pt: 'Resumo do projeto' },
+  proficore_serial:    { en: 'ProfiCore serial number',            fr: 'Numéro de série ProfiCore',      es: 'Número de serie ProfiCore',      pt: 'Número de série do ProfiCore' },
+  profitrace_version:  { en: 'ProfiTrace version',                 fr: 'Version de ProfiTrace',          es: 'Versión de ProfiTrace',          pt: 'Versão do ProfiTrace' },
+  transmission_speed:  { en: 'Transmission speed',                 fr: 'Vitesse de transmission',        es: 'Velocidad de transmisión',       pt: 'Taxa de transmissão' },
+  num_masters:         { en: 'Number of Masters',                  fr: 'Nombre de maîtres',              es: 'Número de maestros',             pt: 'Número de mestres' },
+  num_slaves:          { en: 'Number of slaves',                   fr: 'Nombre d\'esclaves',             es: 'Número de esclavos',             pt: 'Número de escravos' },
+  cycle_time:          { en: 'Cycle time',                         fr: 'Temps de cycle',                 es: 'Tiempo de ciclo',                pt: 'Tempo de ciclo' },
+  ts_lost:    { en: 'Slaves that have been lost at least one time',          fr: 'Esclaves perdus au moins une fois',                es: 'Esclavos perdidos al menos una vez',                  pt: 'Escravos perdidos ao menos uma vez' },
+  ts_diag_dx: { en: 'Slaves that generated diagnostics while in data exchange', fr: 'Esclaves ayant généré des diagnostics en échange', es: 'Esclavos que generaron diagnósticos durante el intercambio', pt: 'Escravos com diagnóstico durante troca de dados' },
+  ts_illegal: { en: 'Devices that have caused illegal responses',            fr: 'Appareils ayant causé des réponses illégales',     es: 'Dispositivos que causaron respuestas ilegales',       pt: 'Dispositivos com respostas inválidas' },
+  ts_addr126: { en: 'Device found on reserved address 126',                  fr: 'Appareil trouvé sur l\'adresse réservée 126',      es: 'Dispositivo encontrado en la dirección reservada 126', pt: 'Dispositivo no endereço reservado 126' },
+  ts_retries: { en: 'Slaves that caused retries',                            fr: 'Esclaves ayant causé des reprises',                es: 'Esclavos que causaron reintentos',                    pt: 'Escravos que causaram retransmissões' },
+  ts_syncs:   { en: 'Slaves that caused syncs',                              fr: 'Esclaves ayant causé des syncs',                   es: 'Esclavos que causaron syncs',                         pt: 'Escravos que causaram syncs' },
+  ts_params:  { en: 'Parameters have been sent to the following slaves',     fr: 'Paramètres envoyés aux esclaves suivants',         es: 'Parámetros enviados a los siguientes esclavos',       pt: 'Parâmetros enviados a escravos' },
+  ab_diff:        { en: 'AB Diff voltage',         fr: 'Tension différentielle AB',         es: 'Tensión diferencial AB',         pt: 'Tensão diferencial AB' },
+  ab_diff_stable: { en: 'AB Diff stable voltage',  fr: 'Tension différentielle AB stable',  es: 'Tensión diferencial AB estable', pt: 'Tensão diferencial AB estável' },
+  dd_address:        { en: 'Address',                  fr: 'Adresse',                  es: 'Dirección',                  pt: 'Endereço' },
+  dd_device_type:    { en: 'Device type',              fr: 'Type d\'appareil',         es: 'Tipo de dispositivo',        pt: 'Tipo de dispositivo' },
+  dd_channel:        { en: 'Channel',                  fr: 'Canal',                    es: 'Canal',                      pt: 'Canal' },
+  dd_device_name:    { en: 'Device name',              fr: 'Nom de l\'appareil',       es: 'Nombre del dispositivo',     pt: 'Nome do dispositivo' },
+  dd_identno:        { en: 'IdentNo',                  fr: 'IdentNo',                  es: 'IdentNo',                    pt: 'Número de identificação' },
+  dd_total_retry:    { en: 'Total retry count',        fr: 'Nombre total de reprises', es: 'Total de reintentos',        pt: 'Total de retransmissões' },
+  dd_diag_dx:        { en: 'Diag count while DX',      fr: 'Diagnostics pendant DX',   es: 'Diagnósticos durante DX',    pt: 'Diagnósticos durante DX' },
+  dd_io_length:      { en: 'I/O length (bytes)',       fr: 'Longueur E/S (octets)',    es: 'Longitud E/S (bytes)',       pt: 'Tamanho de E/S (bytes)' },
+  dd_times_lost:     { en: 'Times lost',               fr: 'Nombre de pertes',         es: 'Veces perdido',              pt: 'Vezes perdido' },
+  dd_manufacturer:   { en: 'Manufacturer',             fr: 'Fabricant',                es: 'Fabricante',                 pt: 'Fabricante' },
+  dd_model:          { en: 'Model name',               fr: 'Nom du modèle',            es: 'Nombre del modelo',          pt: 'Modelo' },
+  dd_signal_voltage: { en: 'Signal voltage',           fr: 'Tension du signal',        es: 'Tensión de la señal',        pt: 'Tensão do sinal' },
+  al_master:    { en: 'Master',     fr: 'Maître',    es: 'Maestro',  pt: 'Mestre' },
+  al_slave:     { en: 'Slave',      fr: 'Esclave',   es: 'Esclavo',  pt: 'Escravo' },
+  not_available: { en: 'Not available', fr: 'Non disponible', es: 'No disponible', pt: 'Não disponível' },
+};
+
+const LANG_NAMES = { en: 'Inglês (EN)', fr: 'Francês (FR)', es: 'Espanhol (ES)' };
+
+function detectLanguage(rawText) {
+  const checks = [
+    { lang: 'en', anchors: ['Network name', 'Number of Masters', 'Slaves that caused syncs'] },
+    { lang: 'fr', anchors: ['Nom du réseau', 'Nombre de maîtres', 'Esclaves ayant causé des syncs'] },
+    { lang: 'es', anchors: ['Nombre de la red', 'Número de maestros', 'Esclavos que causaron syncs'] },
+  ];
+  let best = { lang: 'en', score: 0 };
+  for (const c of checks) {
+    const score = c.anchors.filter(a => rawText.includes(a)).length;
+    if (score > best.score) best = { lang: c.lang, score };
+  }
+  return best.lang;
+}
+
+function label(key, lang) { return DICT[key]?.[lang] || key; }
+function pt(key) { return DICT[key]?.pt || key; }
+
+function findLineLoose(lines, labelStr) {
+  const i = lines.findIndex(l => l.includes(labelStr));
+  return i >= 0 ? { idx: i, line: lines[i] } : null;
+}
+
+function valueAfterLabel(lines, labelStr) {
+  const found = findLineLoose(lines, labelStr);
+  if (!found) return null;
+  const labelPos = found.line.indexOf(labelStr);
+  const inline = found.line.slice(labelPos + labelStr.length).replace(/^[:\s]+/, '').trim();
+  if (inline) return inline;
+  for (let j = found.idx + 1; j < Math.min(found.idx + 4, lines.length); j++) {
+    if (lines[j] && lines[j].trim()) return lines[j].trim();
+  }
+  return null;
+}
+
+function parseAddressCSV(s) {
+  if (!s || /^None$/i.test(s.trim()) || /^Aucun/i.test(s.trim()) || /^Ninguno/i.test(s.trim())) return [];
+  return s.split(',').map(x => parseInt(x.trim(), 10)).filter(n => !isNaN(n) && n >= 0 && n <= 126);
+}
+
+function parseHeader(lines, rawText, lang) {
+  const dateMatch = rawText.match(/(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2})/);
+  let company = valueAfterLabel(lines, 'Company:') || '';
+  company = company.replace(/\s*is not defined by the end-customer\)?\s*/i, '').trim();
+  const m = company.match(/^([A-Za-z0-9._\-&]+)/);
+  company = m ? m[1] : company;
+  return {
+    networkName:        valueAfterLabel(lines, label('network_name', lang) + ':') || '',
+    location:           valueAfterLabel(lines, label('location', lang) + ':') || '',
+    projectDetails:     valueAfterLabel(lines, label('project_details', lang) + ':') || '',
+    proficoreSerial:    valueAfterLabel(lines, label('proficore_serial', lang) + ':') || '',
+    profitraceVersion:  valueAfterLabel(lines, label('profitrace_version', lang) + ':') || '',
+    generatedAt: dateMatch ? dateMatch[1] : '',
+    inspector: { name: valueAfterLabel(lines, 'Name:') || '', company }
+  };
+}
+
+function parseNetwork(lines, lang) {
+  const speedRaw = valueAfterLabel(lines, label('transmission_speed', lang) + ':') || '0 kbps';
+  const speedKbps = parseInt(speedRaw.replace(/[^\d]/g, ''), 10) || 0;
+  const numMasters = parseInt(valueAfterLabel(lines, label('num_masters', lang) + ':') || '0', 10);
+  const numSlaves = parseInt(valueAfterLabel(lines, label('num_slaves', lang) + ':') || '0', 10);
+  const cycleRaw = valueAfterLabel(lines, label('cycle_time', lang) + ':') || '';
+  const min = parseFloat((cycleRaw.match(/Min:\s*([\d.]+)/) || [, '0'])[1]);
+  const avg = parseFloat((cycleRaw.match(/Avg:\s*([\d.]+)/) || [, '0'])[1]);
+  const max = parseFloat((cycleRaw.match(/Max:\s*([\d.]+)/) || [, '0'])[1]);
+  return { transmissionSpeedKbps: speedKbps, transmissionSpeedRaw: speedRaw, numMasters, numSlaves,
+           cycleTime: { minMs: min, avgMs: avg, maxMs: max, raw: cycleRaw } };
+}
+
+function parseTestedSubjects(lines, lang) {
+  return {
+    slavesLost:        parseAddressCSV(valueAfterLabel(lines, label('ts_lost', lang) + ':')),
+    slavesDiagInDX:    parseAddressCSV(valueAfterLabel(lines, label('ts_diag_dx', lang) + ':')),
+    illegalResponses:  parseAddressCSV(valueAfterLabel(lines, label('ts_illegal', lang) + ':')),
+    deviceOnAddr126:   parseAddressCSV(valueAfterLabel(lines, label('ts_addr126', lang) + ':')),
+    slavesWithRetries: parseAddressCSV(valueAfterLabel(lines, label('ts_retries', lang) + ':')),
+    slavesWithSyncs:   parseAddressCSV(valueAfterLabel(lines, label('ts_syncs', lang) + ':')),
+    paramsSentTo:      parseAddressCSV(valueAfterLabel(lines, label('ts_params', lang) + ':'))
+  };
+}
+
+function parseAddressListSection(lines) {
+  const map = new Map();
+  for (let i = 0; i < lines.length; i++) {
+    if (!/^Address\s+IdentNo\s+Manufacturer/.test(lines[i]) &&
+        !/^Adresse\s+IdentNo\s+Fabricant/.test(lines[i]) &&
+        !/^Dirección\s+IdentNo\s+Fabricante/.test(lines[i])) continue;
+    for (let j = i + 1; j < lines.length; j++) {
+      const ln = lines[j];
+      if (!ln.trim()) break;
+      if (/^(Usage of this|Name:|Company:|Signature:|Page \d|9 |10 |11 )/.test(ln)) break;
+      const m = ln.match(/^\s*(\d{1,3})\s+(-|\S+)\s+(-|\S+)\s+(.+?)\s+(-|\S+)\s*$/);
+      if (m) {
+        const addr = parseInt(m[1], 10);
+        const modelName = m[4].trim();
+        const isMaster = ['Master', 'Maître', 'Maestro'].includes(modelName);
+        map.set(addr, { address: addr, identNo: m[2] === '-' ? null : m[2], manufacturer: m[3] === '-' ? null : m[3], modelName: modelName === '-' ? null : modelName, gsdName: m[5] === '-' ? null : m[5], isMaster });
+      }
+    }
+  }
+  return map;
+}
+
+function tokenizePositioned(line) {
+  const tokens = [];
+  const re = /([\d.]+)/g;
+  let m;
+  while ((m = re.exec(line)) !== null) {
+    tokens.push({ text: m[1], col: m.index, value: parseFloat(m[1]) });
+  }
+  return tokens;
+}
+
+function parseBarGraphChart(lines, startIdx, endIdx) {
+  const out = [];
+  let addrLineIdx = -1;
+  for (let i = endIdx - 1; i > startIdx; i--) {
+    const tokens = tokenizePositioned(lines[i] || '');
+    if (tokens.length >= 3 && tokens.every(t => Number.isInteger(t.value) && t.value >= 0 && t.value <= 126 && !t.text.includes('.'))) {
+      addrLineIdx = i; break;
+    }
+  }
+  if (addrLineIdx < 0) return out;
+  const addrTokens = tokenizePositioned(lines[addrLineIdx]).sort((a, b) => a.col - b.col);
+  const voltageTokens = [];
+  for (let i = startIdx + 1; i < addrLineIdx; i++) {
+    const ln = lines[i]; if (!ln) continue;
+    const cleaned = ln.replace(/^\s*\d+\.\dV\s*/g, s => ' '.repeat(s.length));
+    const toks = tokenizePositioned(cleaned).filter(t => t.text.includes('.') && t.value >= 0 && t.value <= 10);
+    voltageTokens.push(...toks);
+  }
+  voltageTokens.sort((a, b) => a.col - b.col);
+  if (voltageTokens.length === addrTokens.length) {
+    for (let i = 0; i < addrTokens.length; i++) {
+      out.push({ address: addrTokens[i].value, voltage: voltageTokens[i].value });
+    }
+    return out;
+  }
+  for (const addr of addrTokens) {
+    let best = null, bestDist = Infinity;
+    for (const v of voltageTokens) {
+      const d = Math.abs(v.col - addr.col);
+      if (d < bestDist) { bestDist = d; best = v; }
+    }
+    if (best && bestDist <= 8) out.push({ address: addr.value, voltage: best.value });
+  }
+  return out;
+}
+
+function parseBarGraph(lines, lang) {
+  const points = new Map();
+  const sectionStart = labelStr => lines.findIndex(l => l.trim() === labelStr);
+  const startDiff = sectionStart(label('ab_diff', lang));
+  const startStable = sectionStart(label('ab_diff_stable', lang));
+  const endOfBarGraph = lines.findIndex(l => /^11\s/.test(l.trim()));
+
+  function harvestSection(start, end, key) {
+    if (start < 0) return;
+    const subgraphStarts = [];
+    for (let i = start; i < end; i++) {
+      if (/(?:Segment\s*\/|Segmento\s*\/).*\(\d+\/\d+\)/.test(lines[i])) subgraphStarts.push(i);
+    }
+    for (let s = 0; s < subgraphStarts.length; s++) {
+      const subStart = subgraphStarts[s];
+      const subEnd = s + 1 < subgraphStarts.length ? subgraphStarts[s + 1] : end;
+      const pairs = parseBarGraphChart(lines, subStart, subEnd);
+      for (const { address, voltage } of pairs) {
+        const cur = points.get(address) || { address };
+        cur[key] = voltage;
+        points.set(address, cur);
+      }
+    }
+  }
+
+  const diffEnd = startStable > 0 ? startStable : (endOfBarGraph > 0 ? endOfBarGraph : lines.length);
+  const stableEnd = endOfBarGraph > 0 ? endOfBarGraph : lines.length;
+  harvestSection(startDiff, diffEnd, 'diffV');
+  harvestSection(startStable, stableEnd, 'diffStableV');
+  return Array.from(points.values()).filter(p => p.diffV != null && p.diffStableV != null).sort((a, b) => a.address - b.address);
+}
+
+function parseDeviceDetails(lines, lang) {
+  const addrIdx = [];
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/^(?:Address|Adresse|Dirección):\s+(\d+)\s*$/);
+    if (m) addrIdx.push({ idx: i, addr: parseInt(m[1], 10) });
+  }
+  const sec11 = lines.findIndex(l => /^11\s/.test(l.trim()));
+  if (sec11 < 0) return [];
+
+  const NA = label('not_available', lang);
+  const isNotAvailable = s => !s || s === 'Not available' || s === NA || s === '-';
+  const isMaster = s => ['Master', 'Maître', 'Maestro'].includes(s);
+
+  const devs = [];
+  for (let k = 0; k < addrIdx.length; k++) {
+    const { idx, addr } = addrIdx[k];
+    if (idx < sec11) continue;
+    const nextIdx = k + 1 < addrIdx.length ? addrIdx[k + 1].idx : lines.length;
+    const block = lines.slice(idx, nextIdx);
+
+    const dt = valueAfterLabel(block, label('dd_device_type', lang) + ':') || 'Slave';
+    const channelRaw = valueAfterLabel(block, label('dd_channel', lang) + ':');
+    const channel = !channelRaw || channelRaw === '<not set>' ? null : channelRaw;
+    const deviceName = valueAfterLabel(block, label('dd_device_name', lang) + ':') || '';
+    const identRaw = valueAfterLabel(block, label('dd_identno', lang) + ':');
+    const manufRaw = valueAfterLabel(block, label('dd_manufacturer', lang) + ':');
+    const modelRaw = valueAfterLabel(block, label('dd_model', lang) + ':');
+    const ioRaw = valueAfterLabel(block, label('dd_io_length', lang) + ':') || '0 In, 0 Out';
+    const sigRaw = valueAfterLabel(block, label('dd_signal_voltage', lang) + ':') || '';
+    const diagRaw = valueAfterLabel(block, label('dd_diag_dx', lang) + ':') || '0';
+    const retryRaw = valueAfterLabel(block, label('dd_total_retry', lang) + ':') || '0';
+    const lostRaw = valueAfterLabel(block, label('dd_times_lost', lang) + ':') || '0';
+
+    const ioMatch = ioRaw.match(/(\d+)\s*(?:In|E),\s*(\d+)\s*(?:Out|S)/);
+    const sigMatch = sigRaw.match(/Min:\s*([\d.]+)\s*Volt,\s*Max:\s*([\d.]+)\s*Volt,\s*Last:\s*([\d.]+)\s*Volt/);
+
+    devs.push({
+      address: addr,
+      deviceType: isMaster(dt) ? 'Master' : 'Slave',
+      channel, deviceName,
+      identNo: isNotAvailable(identRaw) ? null : identRaw,
+      manufacturer: isNotAvailable(manufRaw) ? null : manufRaw,
+      modelName: isNotAvailable(modelRaw) ? null : modelRaw,
+      ioLengthIn: ioMatch ? parseInt(ioMatch[1], 10) : 0,
+      ioLengthOut: ioMatch ? parseInt(ioMatch[2], 10) : 0,
+      ioRaw,
+      signalVoltage: {
+        minV: sigMatch ? parseFloat(sigMatch[1]) : 0,
+        maxV: sigMatch ? parseFloat(sigMatch[2]) : 0,
+        lastV: sigMatch ? parseFloat(sigMatch[3]) : 0,
+      },
+      diagCountWhileDX: parseInt(diagRaw, 10) || 0,
+      totalRetryCount: parseInt(retryRaw, 10) || 0,
+      timesLost: parseInt(lostRaw, 10) || 0
+    });
+  }
+  return devs;
+}
+
+function deriveLiveList(addressList, devices, ts) {
+  const map = new Map();
+  for (let i = 0; i <= 126; i++) map.set(i, 'no_activity');
+  for (const a of addressList.keys()) map.set(a, 'data_exchange');
+  for (const d of devices) map.set(d.address, 'data_exchange');
+  for (const [addr, e] of addressList.entries()) if (e.isMaster) map.set(addr, 'master');
+  for (const d of devices) if (d.deviceType === 'Master') map.set(d.address, 'master');
+  ts.slavesLost.forEach(addr => map.set(addr, 'lost'));
+  return map;
+}
+
+function parseProfiTraceDPReport(rawText) {
+  const lang = detectLanguage(rawText);
+  const lines = rawText.split(/\r?\n/);
+  return {
+    lang,
+    header: parseHeader(lines, rawText, lang),
+    network: parseNetwork(lines, lang),
+    testedSubjects: parseTestedSubjects(lines, lang),
+    addressList: parseAddressListSection(lines),
+    devices: parseDeviceDetails(lines, lang),
+    barGraph: parseBarGraph(lines, lang),
+    liveList: null
+  };
+}
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+async function extractPdfText(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let fullText = '';
+  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+    const page = await pdf.getPage(pageNum);
+    const content = await page.getTextContent();
+    const itemsByY = new Map();
+    for (const item of content.items) {
+      const y = Math.round(item.transform[5]);
+      if (!itemsByY.has(y)) itemsByY.set(y, []);
+      itemsByY.get(y).push({ x: item.transform[4], str: item.str });
+    }
+    const sortedY = [...itemsByY.keys()].sort((a, b) => b - a);
+    for (const y of sortedY) {
+      const items = itemsByY.get(y).sort((a, b) => a.x - b.x);
+      let line = '';
+      for (const it of items) {
+        const targetCol = Math.round(it.x / 5);
+        const lineCol = line.length;
+        const gap = Math.max(1, targetCol - lineCol);
+        if (line.length > 0) line += ' '.repeat(Math.min(gap, 60));
+        line += it.str;
+      }
+      fullText += line + '\n';
+    }
+    fullText += '\n';
+  }
+  return fullText;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+function row(originalLabel, ptLabel, value) {
+  const v = value == null || value === '' ? '—' : value;
+  return `<tr><td class="col-original">${escapeHtml(originalLabel)}</td><td class="col-pt">${escapeHtml(ptLabel)}</td><td class="col-value">${escapeHtml(v)}</td></tr>`;
+}
+
+function renderFiel(report) {
+  const lang = report.lang;
+  const h = report.header, n = report.network, ts = report.testedSubjects;
+  const html = [];
+
+  html.push(`<div class="section-fidelity">
+    <div class="section-fidelity-header"><span class="pt">1. Geral</span><span class="orig">1. General</span></div>
+    <div class="section-fidelity-body"><table class="fidelity-table">
+    <thead><tr><th class="h-original">Original (${lang.toUpperCase()})</th><th>Tradução PT-BR</th><th>Valor extraído</th></tr></thead>
+    <tbody>
+    ${row(label('location', lang), pt('location'), h.location)}
+    ${row(label('network_name', lang), pt('network_name'), h.networkName)}
+    ${row(label('project_details', lang), pt('project_details'), h.projectDetails)}
+    </tbody></table></div></div>`);
+
+  html.push(`<div class="section-fidelity">
+    <div class="section-fidelity-header"><span class="pt">2. Ferramentas usadas</span><span class="orig">2. Used tools</span></div>
+    <div class="section-fidelity-body"><table class="fidelity-table"><tbody>
+    ${row(label('proficore_serial', lang), pt('proficore_serial'), h.proficoreSerial)}
+    ${row(label('profitrace_version', lang), pt('profitrace_version'), h.profitraceVersion)}
+    </tbody></table></div></div>`);
+
+  html.push(`<div class="section-fidelity">
+    <div class="section-fidelity-header"><span class="pt">3. Propriedades da rede</span><span class="orig">3. Network properties</span></div>
+    <div class="section-fidelity-body"><table class="fidelity-table"><tbody>
+    ${row(label('transmission_speed', lang), pt('transmission_speed'), n.transmissionSpeedRaw)}
+    ${row(label('num_masters', lang), pt('num_masters'), n.numMasters)}
+    ${row(label('num_slaves', lang), pt('num_slaves'), n.numSlaves)}
+    ${row(label('cycle_time', lang), pt('cycle_time'), n.cycleTime.raw)}
+    </tbody></table></div></div>`);
+
+  const tsRows = [
+    ['ts_lost', ts.slavesLost], ['ts_diag_dx', ts.slavesDiagInDX],
+    ['ts_illegal', ts.illegalResponses], ['ts_addr126', ts.deviceOnAddr126],
+    ['ts_retries', ts.slavesWithRetries], ['ts_syncs', ts.slavesWithSyncs],
+    ['ts_params', ts.paramsSentTo],
+  ];
+  html.push(`<div class="section-fidelity">
+    <div class="section-fidelity-header"><span class="pt">6. Verificações realizadas</span><span class="orig">6. Tested subjects</span></div>
+    <div class="section-fidelity-body"><table class="fidelity-table"><tbody>
+    ${tsRows.map(([k, addrs]) => row(label(k, lang), pt(k), addrs.length === 0 ? 'None' : addrs.join(', '))).join('')}
+    </tbody></table></div></div>`);
+
+  if (report.addressList.size > 0) {
+    const alRows = [...report.addressList.values()].map(e => `<tr>
+      <td class="col-value">${e.address}</td>
+      <td class="col-original">${escapeHtml(e.identNo || '-')}</td>
+      <td class="col-original">${escapeHtml(e.manufacturer || '-')}</td>
+      <td class="col-pt">${escapeHtml(e.modelName || '-')}</td>
+      <td class="col-original">${escapeHtml(e.gsdName || '-')}</td>
+    </tr>`).join('');
+    html.push(`<div class="section-fidelity">
+      <div class="section-fidelity-header"><span class="pt">9. Lista de endereços (${report.addressList.size})</span><span class="orig">9. Address list</span></div>
+      <div class="section-fidelity-body"><table class="fidelity-table">
+      <thead><tr>
+        <th>Endereço<br><span style="font-weight:400;font-size:9px;color:var(--ink-faint)" class="h-original">Address</span></th>
+        <th class="h-original">IdentNo</th>
+        <th>Fabricante<br><span style="font-weight:400;font-size:9px;color:var(--ink-faint)" class="h-original">Manufacturer</span></th>
+        <th>Modelo<br><span style="font-weight:400;font-size:9px;color:var(--ink-faint)" class="h-original">Model name</span></th>
+        <th>Nome GSD<br><span style="font-weight:400;font-size:9px;color:var(--ink-faint)" class="h-original">GSD name</span></th>
+      </tr></thead>
+      <tbody>${alRows}</tbody></table></div></div>`);
+  }
+
+  if (report.barGraph.length > 0) {
+    const bgRows = report.barGraph.map(p => `<tr>
+      <td class="col-value">${p.address}</td>
+      <td class="col-value">${p.diffV.toFixed(2)} V</td>
+      <td class="col-value">${p.diffStableV.toFixed(2)} V</td>
+    </tr>`).join('');
+    html.push(`<div class="section-fidelity">
+      <div class="section-fidelity-header"><span class="pt">10. Gráfico de barras (${report.barGraph.length})</span><span class="orig">10. Bar graph</span></div>
+      <div class="section-fidelity-body"><table class="fidelity-table">
+      <thead><tr>
+        <th>Endereço<br><span style="font-weight:400;font-size:9px;color:var(--ink-faint)" class="h-original">Address</span></th>
+        <th>${pt('ab_diff')}<br><span style="font-weight:400;font-size:9px;color:var(--ink-faint)" class="h-original">${label('ab_diff', lang)}</span></th>
+        <th>${pt('ab_diff_stable')}<br><span style="font-weight:400;font-size:9px;color:var(--ink-faint)" class="h-original">${label('ab_diff_stable', lang)}</span></th>
+      </tr></thead>
+      <tbody>${bgRows}</tbody></table></div></div>`);
+  }
+
+  if (report.devices.length > 0) {
+    const devRows = report.devices.map(d => `<tr>
+      <td class="col-value">${d.address}</td>
+      <td class="col-pt">${d.deviceType === 'Master' ? pt('al_master') : pt('al_slave')}</td>
+      <td class="col-original">${escapeHtml(d.identNo || '-')}</td>
+      <td class="col-pt">${escapeHtml(d.manufacturer || '-')} / ${escapeHtml(d.modelName || '-')}</td>
+      <td class="col-value">${escapeHtml(d.ioRaw)}</td>
+      <td class="col-value">${d.signalVoltage.lastV > 0 ? `${d.signalVoltage.minV.toFixed(2)} / ${d.signalVoltage.maxV.toFixed(2)} / ${d.signalVoltage.lastV.toFixed(2)}` : '—'}</td>
+      <td class="col-value">${d.diagCountWhileDX} / ${d.totalRetryCount} / ${d.timesLost}</td>
+    </tr>`).join('');
+    html.push(`<div class="section-fidelity">
+      <div class="section-fidelity-header"><span class="pt">11. Detalhe dos dispositivos (${report.devices.length})</span><span class="orig">11. Device details</span></div>
+      <div class="section-fidelity-body"><table class="fidelity-table">
+      <thead><tr>
+        <th>Endereço<br><span style="font-weight:400;font-size:9px;color:var(--ink-faint)" class="h-original">Address</span></th>
+        <th>Tipo<br><span style="font-weight:400;font-size:9px;color:var(--ink-faint)" class="h-original">Device type</span></th>
+        <th class="h-original">IdentNo</th>
+        <th>Fabricante / Modelo<br><span style="font-weight:400;font-size:9px;color:var(--ink-faint)" class="h-original">Manufacturer / Model</span></th>
+        <th>E/S (bytes)<br><span style="font-weight:400;font-size:9px;color:var(--ink-faint)" class="h-original">I/O length</span></th>
+        <th>Sinal min/máx/last (V)<br><span style="font-weight:400;font-size:9px;color:var(--ink-faint)" class="h-original">Signal voltage</span></th>
+        <th>Diag/Retry/Lost</th>
+      </tr></thead>
+      <tbody>${devRows}</tbody></table></div></div>`);
+  }
+
+  document.getElementById('fiel-content').innerHTML = html.join('');
+}
+
+const SCORE_WEIGHTS = { slavesLost: 30, slavesDiagInDX: 20, illegalResponses: 20, deviceOnAddr126: 15, slavesWithRetries: 10, slavesWithSyncs: 3, paramsSentTo: 2 };
+
+function computeScore(report) {
+  const ts = report.testedSubjects;
+  let deduction = 0;
+  for (const key of Object.keys(SCORE_WEIGHTS)) {
+    const a = ts[key]; const w = SCORE_WEIGHTS[key];
+    deduction += a.length === 0 ? 0 : (a.length === 1 ? w * 0.5 : w);
+  }
+  const total = Math.max(0, Math.round(100 - deduction));
+  let cls;
+  if (total >= 90) cls = 'excelente';
+  else if (total >= 75) cls = 'bom';
+  else if (total >= 50) cls = 'atencao';
+  else cls = 'critico';
+  return { total, classification: cls };
+}
+
+const TS_LABELS_PT = {
+  slavesLost: 'Escravos perdidos',
+  slavesDiagInDX: 'Diagnósticos durante DX',
+  illegalResponses: 'Respostas inválidas',
+  deviceOnAddr126: 'Dispositivo no endereço 126',
+  slavesWithRetries: 'Escravos com retransmissões',
+  slavesWithSyncs: 'Escravos com syncs',
+  paramsSentTo: 'Parâmetros enviados a escravos'
+};
+
+function classifyVoltage(v) {
+  if (v >= 5.5) return 'good';
+  if (v >= 4.0) return 'warn';
+  return 'bad';
+}
+
+function renderDiag(report) {
+  const score = computeScore(report);
+  const h = report.header, n = report.network, ts = report.testedSubjects;
+  const conclusion = Object.values(ts).some(arr => arr.length > 0) ? 'deviations_found' : 'no_deviations';
+
+  document.getElementById('f-network').textContent = h.networkName || '—';
+  document.getElementById('f-location').textContent = h.location || '—';
+  document.getElementById('f-inspector').textContent = h.inspector.name || '—';
+  document.getElementById('f-company').textContent = h.inspector.company || '—';
+  document.getElementById('f-date').textContent = h.generatedAt || '—';
+  document.getElementById('f-speed').textContent = n.transmissionSpeedKbps + ' kbps';
+  document.getElementById('f-msr').textContent = `${n.numMasters} mestre(s) · ${n.numSlaves} escravos`;
+  document.getElementById('f-cycle').textContent = `${n.cycleTime.minMs} / ${n.cycleTime.avgMs} / ${n.cycleTime.maxMs} ms`;
+
+  const scoreEl = document.getElementById('f-score');
+  scoreEl.textContent = score.total;
+  scoreEl.className = 'score-number ' + score.classification;
+  document.getElementById('f-class').textContent = score.classification.toUpperCase();
+  document.getElementById('f-conclusion').innerHTML = conclusion === 'no_deviations'
+    ? '<span class="pill ok">✓ SEM DESVIOS</span>'
+    : '<span class="pill warn">⚠ DESVIOS DETECTADOS</span>';
+
+  const tsBody = document.getElementById('ts-body');
+  tsBody.innerHTML = '';
+  for (const key of Object.keys(TS_LABELS_PT)) {
+    const addrs = ts[key];
+    const isSync = key === 'slavesWithSyncs';
+    let cls = 'ok', txt = 'OK';
+    if (addrs.length > 0) { cls = isSync ? 'info' : 'bad'; txt = isSync ? 'INFO' : 'DESVIO'; }
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${TS_LABELS_PT[key]}</td><td><span class="pill ${cls}">${txt}</span></td><td class="addrs">${addrs.length === 0 ? '—' : addrs.join(', ')}</td>`;
+    tsBody.appendChild(tr);
+  }
+
+  const liveList = deriveLiveList(report.addressList, report.devices, report.testedSubjects);
+  const ll = document.getElementById('livelist');
+  ll.innerHTML = '';
+  let active = 0;
+  for (let i = 0; i <= 126; i++) {
+    const state = liveList.get(i);
+    const cell = document.createElement('div');
+    cell.className = 'livelist-cell';
+    if (state === 'master') { cell.classList.add('master'); active++; }
+    else if (state === 'data_exchange') { cell.classList.add('dx'); active++; }
+    else if (state === 'lost') cell.classList.add('lost');
+    cell.textContent = i;
+    cell.title = `Endereço ${i}: ${state}`;
+    ll.appendChild(cell);
+  }
+  document.getElementById('ll-count').textContent = `${active}/127`;
+
+  const bg = document.getElementById('bargraph');
+  bg.innerHTML = '';
+  const maxV = Math.max(...report.barGraph.map(p => p.diffV), 7);
+  for (const p of report.barGraph) {
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    const bar = document.createElement('div');
+    const cls = classifyVoltage(p.diffV);
+    bar.className = 'bar ' + (cls === 'warn' ? 'warn' : cls === 'bad' ? 'bad' : '');
+    bar.style.height = `${(p.diffV / maxV) * 180}px`;
+    bar.title = `Endereço ${p.address}: ${p.diffV.toFixed(2)} V`;
+    const lbl = document.createElement('div');
+    lbl.className = 'bar-label';
+    lbl.textContent = p.address;
+    col.appendChild(bar); col.appendChild(lbl);
+    bg.appendChild(col);
+  }
+  document.getElementById('bg-count').textContent = `${report.barGraph.length} dispositivos`;
+
+  const devBody = document.getElementById('dev-body');
+  devBody.innerHTML = '';
+  for (const d of report.devices) {
+    const issue = d.diagCountWhileDX > 0 || d.totalRetryCount > 0 || d.timesLost > 0;
+    const tr = document.createElement('tr');
+    if (issue) tr.classList.add('has-issue');
+    const sigText = d.signalVoltage.lastV > 0 ? `${d.signalVoltage.minV.toFixed(2)} / ${d.signalVoltage.maxV.toFixed(2)} / ${d.signalVoltage.lastV.toFixed(2)}` : '—';
+    tr.innerHTML = `
+      <td><strong>${d.address}</strong> ${d.deviceType === 'Master' ? '<span class="pill info" style="margin-left:8px">MESTRE</span>' : ''}</td>
+      <td>${d.deviceType === 'Master' ? 'Mestre' : 'Escravo'}</td>
+      <td>${d.manufacturer || '—'} / ${d.modelName || '—'}</td>
+      <td class="num">${d.ioLengthIn}/${d.ioLengthOut}</td>
+      <td class="num">${sigText}</td>
+      <td class="num">${d.diagCountWhileDX}/${d.totalRetryCount}/${d.timesLost}</td>`;
+    devBody.appendChild(tr);
+  }
+  document.getElementById('dev-count').textContent = `${report.devices.length} dispositivos`;
+
+  const notesUl = document.getElementById('notes');
+  notesUl.innerHTML = '';
+  const notes = [];
+  if (ts.slavesWithSyncs.length > 0) notes.push(`Syncs detectados em ${ts.slavesWithSyncs.length} escravo(s) (endereços ${ts.slavesWithSyncs.join(', ')}). Quando origem é ABB DCS, é benigno conforme nota do ProfiTrace.`);
+  if (ts.slavesDiagInDX.length > 0) notes.push(`Escravo(s) ${ts.slavesDiagInDX.join(', ')} geraram diagnóstico durante data exchange — investigar GSD e estado do dispositivo.`);
+  if (n.numMasters > 1) notes.push(`Rede multi-mestre (${n.numMasters} mestres). Métricas de timing dependem de coordenação de tokens.`);
+  notes.push(`Análise de tensão AB Diff considera baudrate ${n.transmissionSpeedKbps} kbps. Margens elétricas variam por baudrate (IEC 61158-3).`);
+  const lowV = report.barGraph.filter(p => p.diffV < 5.5);
+  if (lowV.length > 0) notes.push(`${lowV.length} dispositivo(s) com tensão diferencial abaixo de 5,5 V (endereços ${lowV.map(p => p.address).join(', ')}).`);
+  for (const text of notes) {
+    const li = document.createElement('li');
+    li.textContent = text;
+    notesUl.appendChild(li);
+  }
+}
+
+function buildTextSummary(report) {
+  const score = computeScore(report);
+  const h = report.header, n = report.network, ts = report.testedSubjects;
+  const lines = [];
+  lines.push('===========================================');
+  lines.push('DP·Trace BR — Relatório PROFIBUS DP');
+  lines.push('===========================================');
+  lines.push('');
+  lines.push('--- CÓPIA FIEL (do PDF original) ---');
+  lines.push(`Rede: ${h.networkName}`);
+  lines.push(`Local: ${h.location}`);
+  lines.push(`Inspetor: ${h.inspector.name} (${h.inspector.company})`);
+  lines.push(`Data: ${h.generatedAt}`);
+  lines.push(`Idioma do PDF: ${LANG_NAMES[report.lang]}`);
+  lines.push('');
+  lines.push(`Taxa de transmissão: ${n.transmissionSpeedRaw}`);
+  lines.push(`Mestres: ${n.numMasters}, Escravos: ${n.numSlaves}`);
+  lines.push(`Tempo de ciclo: ${n.cycleTime.raw}`);
+  lines.push('');
+  lines.push('Verificações ProfiTrace:');
+  for (const key of Object.keys(TS_LABELS_PT)) {
+    lines.push(`  ${TS_LABELS_PT[key]}: ${ts[key].length === 0 ? 'nenhum' : ts[key].join(', ')}`);
+  }
+  lines.push('');
+  lines.push('--- DIAGNÓSTICO (gerado pelo DP·Trace BR) ---');
+  lines.push(`Score: ${score.total}/100 (${score.classification.toUpperCase()})`);
+  const issues = report.devices.filter(d => d.diagCountWhileDX > 0 || d.totalRetryCount > 0 || d.timesLost > 0);
+  lines.push('');
+  lines.push('Dispositivos com eventos:');
+  if (issues.length === 0) lines.push('  Nenhum.');
+  else for (const d of issues) {
+    lines.push(`  Endereço ${d.address} (${d.manufacturer || '?'}/${d.modelName || '?'}): diag=${d.diagCountWhileDX} retry=${d.totalRetryCount} lost=${d.timesLost}`);
+  }
+  lines.push('');
+  lines.push('— Gerado por DP·Trace BR v0.2');
+  return lines;
+}
+
+function exportPDF() {
+  const report = window._currentReport;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const lines = buildTextSummary(report);
+  let y = 20;
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DP·Trace BR — Relatório PROFIBUS DP', 20, y);
+  y += 10;
+  doc.setFontSize(9);
+  doc.setFont('courier', 'normal');
+  for (const ln of lines.slice(3)) {
+    if (y > 280) { doc.addPage(); y = 20; }
+    doc.text(ln, 20, y);
+    y += 4.5;
+  }
+  doc.save(`DP-Trace-${report.header.networkName.replace(/\s+/g, '_')}.pdf`);
+}
+
+async function exportDOCX() {
+  const report = window._currentReport;
+  const lines = buildTextSummary(report);
+  const D = window.docx;
+  const paragraphs = [
+    new D.Paragraph({ children: [new D.TextRun({ text: 'DP·Trace BR — Relatório PROFIBUS DP', bold: true, size: 32 })], spacing: { after: 240 } }),
+    ...lines.slice(3).map(ln => new D.Paragraph({ children: [new D.TextRun({ text: ln, font: 'Consolas', size: 20 })] }))
+  ];
+  const docDef = new D.Document({ sections: [{ children: paragraphs }] });
+  const blob = await D.Packer.toBlob(docDef);
+  saveAs(blob, `DP-Trace-${report.header.networkName.replace(/\s+/g, '_')}.docx`);
+}
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('pdfFile');
+const status = document.getElementById('status');
+const reportEl = document.getElementById('report');
+
+function setStatus(msg, type = 'info') {
+  status.textContent = msg;
+  status.className = 'status active' + (type !== 'info' ? ' ' + type : '');
+}
+
+function clearStatus() { status.classList.remove('active'); }
+
+async function handleFile(file) {
+  if (!file || !file.name.toLowerCase().endsWith('.pdf')) {
+    setStatus('Arquivo inválido. Envie um PDF do ProfiTrace.', 'error');
+    return;
+  }
+  reportEl.classList.remove('active');
+  setStatus(`▸ Processando ${file.name} (${(file.size / 1024).toFixed(0)} KB)...`);
+  try {
+    const text = await extractPdfText(file);
+    setStatus(`▸ Texto extraído (${text.length} chars). Detectando idioma...`);
+    const report = parseProfiTraceDPReport(text);
+    if (report.devices.length === 0 && Object.values(report.testedSubjects).every(a => a.length === 0)) {
+      setStatus(`⚠ Não consegui identificar dados de PROFIBUS DP. Idioma detectado: ${LANG_NAMES[report.lang]}.`, 'error');
+      return;
+    }
+    window._currentReport = report;
+
+    document.getElementById('lang-detected').style.display = 'inline-flex';
+    document.getElementById('lang-detected-name').textContent = LANG_NAMES[report.lang];
+    document.querySelectorAll('.langs span').forEach(s => s.classList.remove('active'));
+    document.getElementById('lang-' + report.lang)?.classList.add('active');
+
+    renderFiel(report);
+    renderDiag(report);
+    reportEl.classList.add('active');
+    setStatus(`✓ ${LANG_NAMES[report.lang]} · ${report.devices.length} dispositivos · ${report.barGraph.length} pontos de tensão.`, 'success');
+    setTimeout(clearStatus, 5000);
+  } catch (err) {
+    console.error(err);
+    setStatus(`Erro ao processar PDF: ${err.message}`, 'error');
+  }
+}
+
+fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFile(e.dataTransfer.files[0]);
+});
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+  });
+});
+
+document.querySelectorAll('.toggle-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.toggle-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.body.classList.toggle('lang-only-pt', b.dataset.view === 'pt');
+  });
+});
+
+document.getElementById('btnPDF').addEventListener('click', exportPDF);
+document.getElementById('btnDOCX').addEventListener('click', exportDOCX);
+document.getElementById('btnReset').addEventListener('click', () => {
+  reportEl.classList.remove('active');
+  document.getElementById('lang-detected').style.display = 'none';
+  document.querySelectorAll('.langs span').forEach(s => s.classList.remove('active'));
+  fileInput.value = '';
+  clearStatus();
+  window.scrollTo(0, 0);
+});
+
+</script>
+
+</body>
+</html>
