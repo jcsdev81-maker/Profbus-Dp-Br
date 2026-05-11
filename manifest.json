@@ -1,0 +1,27 @@
+{
+  "name": "DP·Trace BR — Tradutor de relatórios ProfiTrace",
+  "short_name": "DP·Trace BR",
+  "description": "Tradutor offline de relatórios PROFIBUS DP do ProfiTrace para português brasileiro.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#0a2d3d",
+  "background_color": "#0a2d3d",
+  "lang": "pt-BR",
+  "categories": ["productivity", "utilities", "engineering"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%230a2d3d'/><path d='M40 60h112v8H40zM40 92h80v8H40zM40 124h112v8H40z' fill='%23f4c81f'/><circle cx='160' cy='96' r='6' fill='%2350a8c8'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%230a2d3d'/><path d='M106 160h300v22H106zM106 245h216v22H106zM106 330h300v22H106z' fill='%23f4c81f'/><circle cx='427' cy='256' r='16' fill='%2350a8c8'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
