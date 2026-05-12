@@ -7,7 +7,7 @@
    Versionar CACHE_NAME a cada release para invalidar o cache antigo.
    ============================================================================ */
 
-const CACHE_VERSION = 'v0.1.0';
+const CACHE_VERSION = 'v0.6.0';
 const CACHE_NAME    = `dptrace-br-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `dptrace-br-runtime-${CACHE_VERSION}`;
 
@@ -16,7 +16,7 @@ const RUNTIME_CACHE = `dptrace-br-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
   './',
   './index.html',
-  './manifest.webmanifest',
+  './manifest.json',
 ];
 
 /* CDNs que o app usa. Pre-cache no install garante 1ª execução offline. */
@@ -25,6 +25,8 @@ const CDN_ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
   'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
   'https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js',
   'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap',
 ];
 
