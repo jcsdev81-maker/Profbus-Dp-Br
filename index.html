@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="DP·Trace BR">
 <meta name="description" content="Tradutor de relatórios PROFIBUS DP do ProfiTrace para português. Funciona 100% offline.">
 <title>DP·Trace BR — Tradutor de relatórios ProfiTrace</title>
+<link rel="manifest" href="./manifest.json">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%230a2d3d'/%3E%3Cpath d='M40 60h112v8H40zM40 92h80v8H40zM40 124h112v8H40z' fill='%23f4c81f'/%3E%3Ccircle cx='160' cy='96' r='6' fill='%2350a8c8'/%3E%3C/svg%3E">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -165,6 +166,12 @@ input[type=file]{display:none}
   font-weight:700;
 }
 .btn-success:hover:not(:disabled){background:#60b8d8}
+.btn-word{
+  background:#2b579a;color:#fff;
+  font-weight:600;
+}
+.btn-word:hover:not(:disabled){background:#1e4480}
+.btn-word:disabled{background:var(--border-2);color:var(--muted);cursor:not-allowed}
 
 .log{
   background:var(--surface);border:1px solid var(--border);
@@ -224,6 +231,100 @@ input[type=file]{display:none}
   font-size:12px;color:var(--muted);
   border-top:1px dashed var(--border);padding-top:10px;margin-top:6px;
 }
+
+/* === Diagnóstico Sênior === */
+.senior{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:0;
+  box-shadow:var(--shadow);
+  display:none;margin-top:18px;overflow:hidden;
+}
+.senior.active{display:block}
+.senior-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 24px;border-bottom:1px solid var(--border);
+  gap:14px;flex-wrap:wrap;
+}
+.senior-header h3{
+  font-size:15px;font-weight:600;letter-spacing:-0.01em;color:var(--pt-deep);
+  margin:0;
+}
+.senior-header h3 .senior-sub{
+  display:block;font-size:11px;font-weight:400;color:var(--muted);
+  font-family:var(--font-mono);margin-top:2px;
+}
+.senior-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 14px;border-radius:24px;
+  font-family:var(--font-mono);font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.08em;
+}
+.senior-badge .led{
+  width:9px;height:9px;border-radius:50%;display:inline-block;
+}
+.senior-status-ok{background:#e6f6ea;color:#0a6b2a;border:1px solid #b7e4c0}
+.senior-status-ok .led{background:#2fa64e;box-shadow:0 0 6px #2fa64e}
+.senior-status-warn{background:#fff5e0;color:#7a4c0a;border:1px solid #f0c870}
+.senior-status-warn .led{background:#d9a017;box-shadow:0 0 6px #d9a017}
+.senior-status-critical{background:#fbe6e6;color:#8a1f1f;border:1px solid #f0a0a0}
+.senior-status-critical .led{background:#c63838;box-shadow:0 0 6px #c63838}
+
+.senior-meta{
+  padding:12px 24px;background:var(--surface-2);
+  border-bottom:1px solid var(--border);
+  display:flex;gap:18px;flex-wrap:wrap;
+  font-size:12px;color:var(--text-2);
+}
+.senior-meta .meta-item{font-family:var(--font-mono)}
+.senior-meta .meta-item strong{color:var(--pt-deep);font-weight:600;margin-right:4px}
+
+.senior-findings{padding:8px 24px 16px}
+.senior-section{margin:14px 0 6px}
+.senior-section-title{
+  font-size:11px;font-weight:700;letter-spacing:0.08em;
+  text-transform:uppercase;color:var(--muted);
+  margin-bottom:8px;padding-bottom:4px;border-bottom:1px dashed var(--border);
+}
+.senior-finding{
+  padding:12px 14px;margin-bottom:8px;border-radius:var(--radius);
+  border-left:3px solid var(--border-2);background:var(--surface-2);
+  font-size:13px;line-height:1.45;
+}
+.senior-finding.sev-critical{border-left-color:var(--pt-crit);background:#fdf5f5}
+.senior-finding.sev-warn{border-left-color:var(--pt-warn);background:#fff8eb}
+.senior-finding.sev-ok{border-left-color:#2fa64e;background:#f3faf5}
+.senior-finding .f-title{
+  font-weight:600;color:var(--text);margin-bottom:4px;
+  display:flex;align-items:center;gap:8px;
+}
+.senior-finding .f-detail{color:var(--text-2);margin-bottom:6px;font-family:var(--font-mono);font-size:12px}
+.senior-finding .f-interp{color:var(--text-2);margin-bottom:6px;font-style:italic;font-size:12.5px}
+.senior-finding .f-rule{
+  font-size:11px;color:var(--muted);
+  padding-top:6px;border-top:1px dashed rgba(0,0,0,0.06);
+}
+.senior-finding .f-rule strong{color:var(--text-2);font-weight:600}
+
+.senior-disclaimer{
+  padding:14px 24px;background:#f0f4f7;
+  border-top:1px solid var(--border);
+  font-size:11.5px;color:var(--text-2);line-height:1.5;
+}
+.senior-disclaimer strong{color:var(--pt-deep);font-weight:600}
+
+.senior-toggle{
+  appearance:none;border:none;cursor:pointer;
+  padding:8px 14px;border-radius:var(--radius);
+  background:transparent;border:1px solid var(--border);
+  color:var(--text-2);font-family:var(--font-sans);
+  font-size:12.5px;font-weight:500;
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:8px;
+  transition:all 0.14s ease;
+}
+.senior-toggle:hover{background:var(--surface-2);color:var(--text)}
+.senior-toggle .arrow{transition:transform 0.18s ease}
+.senior-toggle.open .arrow{transform:rotate(90deg)}
 
 .warn-banner{
   background:#fff5e0;border:1px solid #f0c870;
@@ -308,6 +409,10 @@ footer span{color:var(--pt-mid);font-weight:500}
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     Baixar PDF traduzido
   </button>
+  <button class="btn btn-word" id="btnDownloadWord" style="display:none">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+    Baixar Word (.docx)
+  </button>
 </div>
 
 <div class="log" id="log">
@@ -325,16 +430,42 @@ footer span{color:var(--pt-mid);font-weight:500}
   <div class="summary-note" id="summaryNote"></div>
 </div>
 
+<div class="senior" id="senior">
+  <div class="senior-header">
+    <h3>
+      Diagnóstico Sênior
+      <span class="senior-sub">Classificação Traffic Light · regras Procentec / IEC 61158</span>
+    </h3>
+    <div class="senior-badge senior-status-ok" id="seniorBadge">
+      <span class="led"></span>
+      <span id="seniorBadgeText">—</span>
+    </div>
+  </div>
+  <div class="senior-meta" id="seniorMeta"></div>
+  <div class="senior-findings" id="seniorFindings"></div>
+  <div class="senior-disclaimer">
+    <strong>Sobre este diagnóstico:</strong> os valores aqui exibidos foram extraídos
+    do próprio PDF do ProfiTrace. Os limites de classificação vêm do <strong>Manual
+    oficial Procentec ProfiTrace 2 (v5.0.2, ago 2016)</strong>, das normas
+    <strong>IEC 61158-3 / EN 50170</strong> e da experiência de campo em redes DP.
+    Cada achado cita a regra usada. O app <strong>não inventa</strong> nenhum dado:
+    quando um campo está ausente no PDF original, o item correspondente é simplesmente
+    omitido do diagnóstico.
+  </div>
+</div>
+
 </main>
 
 <footer>
-  <span>DP·Trace BR</span> · v0.1 · Tradução em camada · 100% offline
+  <span>DP·Trace BR</span> · v0.6 · Tradução + Diagnóstico Sênior · 100% offline
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js" id="pdfjsWorker"></script>
 <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <script>
 /* ============================================================================
@@ -356,20 +487,31 @@ if (window['pdfjsLib']) {
 
 /* ----------------------------------------------------------------------------
    DICIONÁRIOS DE TRADUÇÃO — PROFIBUS DP
-   Calibrados a partir de relatórios reais do ProfiTrace (Jamis, BP Tropical):
-     - RDP_10A_SEG_03.pdf (Preparo Cana, 41 slaves)
-     - RDP_20A_CAMPO.pdf (Difusor, 57 slaves)
-   FR/ES: estrutura preparada, validação pendente com PDF real.
+   Calibrados a partir de:
+     - ProfiTrace 2 User Manual v5.0.2 (Procentec, agosto 2016) — fonte oficial
+       Ref: maua_proftrace.pdf (144 págs), seções 5.11 (Report generation),
+       7.2 (Traffic Light), 9 (Oscilloscope DP), 1.4 (Detectable faults).
+     - Dois relatórios reais ProfiTrace v2.9 em campo (Jamis, BP Tropical):
+       RDP_10A_SEG_03 (Preparo Cana, 41 slaves) e RDP_20A_CAMPO (Difusor, 57 slaves).
+     - WWTP Profibus Report (Tony Bell, 2016) e ProfiTrace2-Network-Report 2008.
+   FR/ES: cobertura ampla baseada em terminologia técnica padrão do ProfiTrace.
+          Termos podem variar conforme a versão do software. Reporte rótulos
+          não traduzidos para calibração com PDF real.
    ---------------------------------------------------------------------------- */
 
 const DICT_EN_PT = {
-  // Cabeçalho do relatório
+  // === Cabeçalho do relatório ===
   'ProfiTrace detailed network report': 'Relatório detalhado de rede ProfiTrace',
   'Powered by:': 'Desenvolvido por:',
 
-  // 1 General
+  // === 1 General ===
   '1 General': '1 Geral',
+  'General': 'Geral',
+  'Company:': 'Empresa:',
   'Network name:': 'Nome da rede:',
+  // Manual oficial usa "Project details:" (não "Project details summary:")
+  // — verificado contra Manual Procentec p.56, Fig.33. Suportar ambos.
+  'Project details:': 'Detalhes do projeto:',
   'Project details summary:': 'Resumo dos detalhes do projeto:',
   'Location:': 'Local:',
   'Measurement start time:': 'Início da medição:',
@@ -381,64 +523,99 @@ const DICT_EN_PT = {
   '(The text above is not defined by the end-customer)':
     '(O texto acima não é definido pelo cliente)',
 
-  // 2 Used tools
+  // === 2 Used tools ===
+  // O Manual oficial v2.9 usa "Serial number used ProfiCore" e "Software version ProfiTrace"
+  // (verificado contra Manual Procentec p.56, Fig.33). Versões antigas usavam a forma
+  // invertida — ambas suportadas.
   '2 Used tools': '2 Ferramentas utilizadas',
+  'Used tools': 'Ferramentas utilizadas',
   'ProfiCore serial number:': 'Número de série do ProfiCore:',
+  'Serial number used ProfiCore:': 'Número de série do ProfiCore:',
   'ProfiTrace version:': 'Versão do ProfiTrace:',
+  'Software version ProfiTrace:': 'Versão do software ProfiTrace:',
 
-  // 3 Network properties
+  // === 3 Network properties ===
   '3 Network properties': '3 Propriedades da rede',
+  'Network properties': 'Propriedades da rede',
   'Transmission speed:': 'Velocidade de transmissão:',
   'Number of Masters:': 'Número de mestres:',
+  'Number of masters:': 'Número de mestres:',
   'Number of slaves:': 'Número de escravos:',
   'Cycle time:': 'Tempo de ciclo:',
 
-  // 4 Conclusion
+  // === 4 Conclusion ===
   '4 Conclusion': '4 Conclusão',
+  'Conclusion': 'Conclusão',
   'No deviations found': 'Nenhum desvio encontrado',
   'Deviations found': 'Desvios encontrados',
+  // Checkboxes oficiais da Conclusion — Manual Procentec p.56, Fig.33
+  'Suggested to be approved': 'Sugerido para aprovação',
+  'Restrictions': 'Restrições',
 
-  // 5 Remarks
+  // === 5 Remarks ===
   '5 Remarks summary': '5 Resumo dos comentários',
+  'Remarks summary': 'Resumo dos comentários',
   'None': 'Nenhum',
 
-  // 6 Tested subjects — DP version
-  '6 Tested subjects:': '6 Itens analisados:',
-  '6.1 Slaves that have been lost at least one time:':
-    '6.1 Escravos perdidos pelo menos uma vez:',
-  '6.2 Slaves that generated diagnostics while in data exchange:':
-    '6.2 Escravos que geraram diagnóstico em data exchange:',
-  '6.3 Devices that have caused illegal responses:':
-    '6.3 Dispositivos que causaram respostas inválidas:',
-  '6.4 Device found on reserved address 126:':
-    '6.4 Dispositivo no endereço reservado 126:',
-  '6.5 Slaves that caused retries:':
-    '6.5 Escravos que causaram retransmissões:',
-  '6.6 Slaves that caused syncs:':
-    '6.6 Escravos que enviaram sincronizações (syncs):',
-  '6.7 Parameters have been sent to the following slaves:':
-    '6.7 Parâmetros enviados aos seguintes escravos:',
+  // === 6 Tested subjects — DP ===
+  // Chaves SEM prefixo numérico — o normalizador strip o "6.x " antes do match.
+  // Isso protege contra renumeração entre versões do ProfiTrace.
+  'Tested subjects:': 'Itens analisados:',
+  '6 Tested subjects:': '6 Itens analisados:',  // mantido para match exato
+
+  'Slaves that have been lost at least one time:':
+    'Escravos que foram perdidos pelo menos uma vez:',
+  'Slaves that generated diagnostics while in data exchange:':
+    'Escravos que geraram diagnósticos durante DX (data exchange):',
+  'Devices that have caused illegal responses:':
+    'Dispositivos que causaram respostas inválidas:',
+  'Device found on reserved address 126:':
+    'Dispositivo encontrado no endereço reservado 126:',
+  // CORREÇÃO técnica: PROFIBUS BR usa "retries" literal (Vivace, SMAR, PNO);
+  // "retransmissão" é confundível com erro de camada física.
+  'Slaves that caused retries:':
+    'Escravos que causaram retries:',
+  // CORREÇÃO técnica: Sync é Global Control Telegram enviado pelo mestre.
+  // Escravos não "enviam syncs". Termo correto: "relacionados a mensagens Sync".
+  'Slaves that caused syncs:':
+    'Escravos relacionados a mensagens Sync:',
+  // === Subseções 6.7+ que ocorrem em relatórios mais completos ===
+  // (Validadas contra ProfiTrace Network Report 2008 — controlsystem.sk)
+  'The following alien slaves are found:':
+    'Escravos não declarados (alien) encontrados:',
+  'Highest station address (HSA) is 126:':
+    'Maior endereço de estação (HSA) é 126:',
+  'The watchdog on the following slaves are not enabled:':
+    'Watchdog desabilitado nos seguintes escravos:',
+  'The watchdog on the following slaves is not enabled:':
+    'Watchdog desabilitado nos seguintes escravos:',
+  'Parameters have been sent to the following slaves:':
+    'Parâmetros enviados aos seguintes escravos:',
+  'Slave or class 1 master found on address 0:':
+    'Escravo ou mestre classe 1 encontrado no endereço 0:',
+
   'Some types of ABB DCS systems continuously send Sync messages. This does':
-    'Alguns sistemas DCS da ABB enviam mensagens de Sync continuamente. Isso',
+    'Alguns sistemas DCS da ABB enviam mensagens Sync continuamente. Isso',
   'not influence the bus communication. These Syncs can be ignored.':
     'não afeta a comunicação no barramento. Esses Syncs podem ser ignorados.',
 
-  // 7 Project details
+  // === 7 Project details (quando existe — varia por versão) ===
   '7 Project details': '7 Detalhes do projeto',
+  'Project details': 'Detalhes do projeto',
 
-  // 8 Live list
-  '8 Live list': '8 Live list',
+  // === Live list (numeração varia: 7 ou 8 dependendo da versão) ===
+  'Live list': 'Live list',
   'Legend:': 'Legenda:',
   'No activity': 'Sem atividade',
   'Master station': 'Estação mestre',
   'Slave station': 'Estação escrava',
   'Device is lost': 'Dispositivo perdido',
-  'Device is in data exchange': 'Em data exchange',
+  'Device is in data exchange': 'Em data exchange (DX)',
   'Device has a parameter error': 'Erro de parametrização',
   'Device has a configuration error': 'Erro de configuração',
 
-  // 9 Address list
-  '9 Address list': '9 Lista de endereços',
+  // === Address list (numeração varia: 8 ou 9) ===
+  'Address list': 'Lista de endereços',
   'Address': 'Endereço',
   'IdentNo': 'IdentNo',
   'Manufacturer': 'Fabricante',
@@ -447,12 +624,22 @@ const DICT_EN_PT = {
   'Master': 'Mestre',
   'Slave': 'Escravo',
 
-  // 10 Bar graph — DP version
-  '10 Bar graph': '10 Gráfico de barras',
+  // === Bar graph (numeração varia: 9, 10) ===
+  'Bar graph': 'Gráfico de barras',
+  'Segment': 'Segmento',
+  'Measurement point': 'Ponto de medição',
   'Segment type:': 'Tipo de segmento:',
   '<not set>': '<não definido>',
+  // DP — termos do gráfico de barras (em PDFs FR/ES geralmente vêm em inglês mesmo)
+  // Manual oficial v2.9 p.49 documenta 2 modos: "AB Differential voltage" (amplitude
+  // média) e "AB Diff stable voltage" (amplitude mínima). Relatório usa forma abreviada
+  // "AB Diff voltage". Suportar todas.
+  'AB Differential voltage': 'Tensão diferencial AB',
   'AB Diff voltage': 'Tensão diferencial AB',
   'AB Diff stable voltage': 'Tensão diferencial AB estável',
+  // Linha de Segment / Measuring point com sufixos M/N
+  'Segment / Measuring point: Segment 1 / Measuring point 1':
+    'Segmento / Ponto de medição: Segment 1 / Measuring point 1',
   'Segment / Measuring point: Segment 1 / Measuring point 1 (1/1):':
     'Segmento / Ponto de medição: Segment 1 / Measuring point 1 (1/1):',
   'Segment / Measuring point: Segment 1 / Measuring point 1 (1/2):':
@@ -474,10 +661,13 @@ const DICT_EN_PT = {
   'Segment / Measuring point: Segment 1 / Measuring point 1 (4/4):':
     'Segmento / Ponto de medição: Segment 1 / Measuring point 1 (4/4):',
 
-  // 11 Device details — DP version
-  '11 Device details': '11 Detalhes do dispositivo',
-  'Segment / Measuring point: Segment 1 / Measuring point 1':
-    'Segmento / Ponto de medição: Segment 1 / Measuring point 1',
+  // === Device details / Slave details (numeração varia: 10, 11, 13) ===
+  // Manual oficial v2.9 usa "Slave details" (Fig.34 p.56), versões mais novas usam
+  // "Device details". Suportar ambos.
+  'Slave details': 'Detalhes do escravo',
+  'Slave details (continued)': 'Detalhes do escravo (continuação)',
+  'Device details': 'Detalhes do dispositivo',
+  'Device details (continued)': 'Detalhes do dispositivo (continuação)',
   'Address:': 'Endereço:',
   'Device type:': 'Tipo de dispositivo:',
   'Channel:': 'Canal:',
@@ -485,14 +675,22 @@ const DICT_EN_PT = {
   'IdentNo:': 'IdentNo:',
   'Manufacturer:': 'Fabricante:',
   'Model name:': 'Nome do modelo:',
-  'Total retry count:': 'Total de retransmissões:',
-  'Diag count while DX:': 'Diagnósticos em DX:',
+  // CORREÇÃO: "retry count" é termo técnico — manter "retries" em PT
+  'Total retry count:': 'Total de retries:',
+  // CORREÇÃO: "Diag count while DX" → "Diagnósticos durante DX (data exchange)"
+  'Diag count while DX:': 'Diagnósticos durante DX:',
+  // Manual oficial v2.9 usa "Bytes I/O length" (Fig.34); versões novas usam o inverso.
+  'Bytes I/O length:': 'Tamanho I/O (bytes):',
   'I/O length (bytes):': 'Tamanho I/O (bytes):',
-  'Times lost:': 'Vezes perdido:',
+  // CORREÇÃO: "Times lost" → quantidade de perdas detectadas durante a medição
+  'Times lost:': 'Perdas detectadas:',
   'Signal voltage:': 'Tensão do sinal:',
   'Not available': 'Não disponível',
+  // Variante simples do oscilograma (sem métrica/stat) — Manual Fig.34 p.56
+  'Last oscilloscope image of this device:': 'Último oscilograma deste dispositivo:',
+  'Last oscilloscope image of this device': 'Último oscilograma deste dispositivo',
 
-  // Disclaimer final
+  // === Disclaimer final ===
   'Disclaimer': 'Aviso legal',
   'End of report': 'Fim do relatório',
   'Usage of this document is only permitted if the disclaimer on the last page has been accepted.':
@@ -503,74 +701,122 @@ const DICT_EN_PT = {
 };
 
 const DICT_FR_PT = {
-  // Cabeçalho
+  // === Cabeçalho do relatório ===
+  'Rapport de réseau détaillé ProfiTrace': 'Relatório detalhado de rede ProfiTrace',
+  'Rapport détaillé du réseau ProfiTrace': 'Relatório detalhado de rede ProfiTrace',
   'Rapport de réseau détaillé': 'Relatório detalhado de rede',
+  'Rapport détaillé du réseau': 'Relatório detalhado de rede',
   'ProfiTrace': 'ProfiTrace',
   'Powered by:': 'Desenvolvido por:',
+  'Propulsé par:': 'Desenvolvido por:',
+  'Édité par:': 'Desenvolvido por:',
 
-  // 1 Général
+  // === 1 Général ===
   '1 Général': '1 Geral',
   'Nom du réseau:': 'Nome da rede:',
   'Résumé des détails du projet:': 'Resumo dos detalhes do projeto:',
   'Emplacement:': 'Local:',
+  'Lieu:': 'Local:',
   'Démarrage mesure:': 'Início da medição:',
+  'Heure de début de la mesure:': 'Início da medição:',
+  'Début de la mesure:': 'Início da medição:',
   'Durée mesure:': 'Duração da medição:',
+  'Durée de la mesure:': 'Duração da medição:',
+  'Uniquement disponible avec la mesure Wizard':
+    'Apenas disponível em medição com Wizard',
+  '(Ce texte est rempli par le client final mais peut être incomplet. Veuillez vous référer à':
+    '(Texto preenchido pelo cliente; pode estar incompleto. Veja a seção',
+  "la section 'Détails du projet' pour le texte complet)":
+    "'Detalhes do projeto' para o texto completo)",
+  "(Le texte ci-dessus n'est pas défini par le client final)":
+    '(O texto acima não é definido pelo cliente)',
   '(The text above is not defined by the end-customer)':
     '(O texto acima não é definido pelo cliente)',
 
-  // 2
+  // === 2 Outils utilisés ===
   '2 Outils utilisés': '2 Ferramentas utilizadas',
   'Numéro de série du ProfiCore:': 'Número de série do ProfiCore:',
+  'Numéro de série ProfiCore:': 'Número de série do ProfiCore:',
   'Version ProfiTrace :': 'Versão do ProfiTrace:',
+  'Version ProfiTrace:': 'Versão do ProfiTrace:',
+  'Version de ProfiTrace:': 'Versão do ProfiTrace:',
 
-  // 3
+  // === 3 Propriétés du réseau ===
   '3 Propriétés du réseau': '3 Propriedades da rede',
   'Vitesse de transmission:': 'Velocidade de transmissão:',
   'Nombre de maîtres:': 'Número de mestres:',
+  'Nombre de Maîtres:': 'Número de mestres:',
   "Nombre d'esclaves:": 'Número de escravos:',
   'Temps de cycle:': 'Tempo de ciclo:',
 
-  // 4
+  // === 4 Conclusion ===
   '4 Conclusion': '4 Conclusão',
   "Aucun probleme n'a été relevé pendant la période d'analyse":
     'Nenhum problema detectado no período de análise',
+  "Aucun problème n'a été relevé pendant la période d'analyse":
+    'Nenhum problema detectado no período de análise',
+  "Aucune déviation trouvée": 'Nenhum desvio encontrado',
   "Des problemes ont été relevés pendant la période d'analyse":
     'Problemas detectados no período de análise',
+  "Des problèmes ont été relevés pendant la période d'analyse":
+    'Problemas detectados no período de análise',
+  'Déviations trouvées': 'Desvios encontrados',
 
-  // 5
+  // === 5 Remarks ===
   '5 Résumé des remarques': '5 Resumo dos comentários',
+  'Résumé des remarques': 'Resumo dos comentários',
   'Aucun': 'Nenhum',
+  'Aucune': 'Nenhum',
 
-  // 6 — Tested subjects DP em francês (algumas linhas vêm em EN no relatório FR)
+  // === 6 Tested subjects — DP ===
   '6 Sujets testés:': '6 Itens analisados:',
+  '6 Éléments testés:': '6 Itens analisados:',
   '6.1 Esclaves perdus au moins une fois:':
+    '6.1 Escravos perdidos pelo menos uma vez:',
+  '6.1 Esclaves ayant été perdus au moins une fois:':
     '6.1 Escravos perdidos pelo menos uma vez:',
   "6.2 Esclaves ayant généré des diagnostics lors de l'échange de données:":
     '6.2 Escravos que geraram diagnóstico em data exchange:',
+  "6.2 Esclaves ayant généré des diagnostics pendant l'échange de données:":
+    '6.2 Escravos que geraram diagnóstico em data exchange:',
   "6.3 Equipements a l'origine de réponses illégales:":
+    '6.3 Dispositivos que causaram respostas inválidas:',
+  "6.3 Équipements à l'origine de réponses illégales:":
     '6.3 Dispositivos que causaram respostas inválidas:',
   "6.4 Appareil présent a l'adresse réservée 126:":
     '6.4 Dispositivo no endereço reservado 126:',
+  "6.4 Appareil présent à l'adresse réservée 126:":
+    '6.4 Dispositivo no endereço reservado 126:',
   '6.5 Esclaves ayant causé des reprises:':
-    '6.5 Escravos que causaram retransmissões:',
+    '6.5 Escravos que causaram retries:',
   '6.6 Esclaves ayant causé des syncs:':
-    '6.6 Escravos que enviaram sincronizações (syncs):',
+    '6.6 Escravos relacionados a mensagens Sync:',
   '6.7 Paramètres envoyés aux esclaves suivants:':
     '6.7 Parâmetros enviados aos seguintes escravos:',
+  'Certains types de systèmes DCS ABB envoient continuellement des messages Sync. Ceci':
+    'Alguns sistemas DCS da ABB enviam mensagens de Sync continuamente. Isso',
+  "n'influence pas la communication du bus. Ces Syncs peuvent être ignorés.":
+    'não afeta a comunicação no barramento. Esses Syncs podem ser ignorados.',
 
-  // 7
+  // === 7 Détails du projet ===
   '7 Détails du projet': '7 Detalhes do projeto',
 
-  // 8 Live list
+  // === 8 Live list ===
   '8 Live list': '8 Live list',
+  '8 Liste active': '8 Live list',
   'Légende:': 'Legenda:',
   'Aucune activité': 'Sem atividade',
+  "Pas d'activité": 'Sem atividade',
   'Station maître': 'Estação mestre',
   'Station esclave': 'Estação escrava',
   'Equipement perdu': 'Dispositivo perdido',
+  'Équipement perdu': 'Dispositivo perdido',
+  "L'équipement est perdu": 'Dispositivo perdido',
   "L'équipement est en échange de données": 'Em data exchange',
+  "L'équipement présente une erreur de paramètre": 'Erro de parametrização',
+  "L'équipement présente une erreur de configuration": 'Erro de configuração',
 
-  // 9 Address list
+  // === 9 Address list ===
   "9 Liste d'adresses": '9 Lista de endereços',
   'Adresse': 'Endereço',
   'IdentNo': 'IdentNo',
@@ -580,149 +826,287 @@ const DICT_FR_PT = {
   'Maître': 'Mestre',
   'Esclave': 'Escravo',
 
-  // 10 Bar graph — DP
+  // === 10 Bar graph — DP ===
   '10 Graphique en barres': '10 Gráfico de barras',
+  '10 Diagramme en barres': '10 Gráfico de barras',
   'Type segment:': 'Tipo de segmento:',
+  'Type de segment:': 'Tipo de segmento:',
   '<non défini>': '<não definido>',
+  '<non configuré>': '<não definido>',
   'Tension différentielle AB': 'Tensão diferencial AB',
   'Tension différentielle AB stable': 'Tensão diferencial AB estável',
+  'Segment / Point de mesure: Segment 1 / Point de mesure 1 (1/1):':
+    'Segmento / Ponto de medição: Segment 1 / Measuring point 1 (1/1):',
+  'Segment / Point de mesure: Segment 1 / Point de mesure 1 (1/2):':
+    'Segmento / Ponto de medição: Segment 1 / Measuring point 1 (1/2):',
+  'Segment / Point de mesure: Segment 1 / Point de mesure 1 (2/2):':
+    'Segmento / Ponto de medição: Segment 1 / Measuring point 1 (2/2):',
 
-  // 11 Device details — DP
+  // === 11 Device details — DP ===
   'Equipement': 'Dispositivo',
+  'Équipement': 'Dispositivo',
   '11 Détails équipement': '11 Detalhes do dispositivo',
+  "11 Détails de l'équipement": '11 Detalhes do dispositivo',
+  '11 Détails des équipements': '11 Detalhes do dispositivo',
+  'Segment / Point de mesure: Segment 1 / Point de mesure 1':
+    'Segmento / Ponto de medição: Segment 1 / Measuring point 1',
   'Adresse:': 'Endereço:',
   "Type d'équipement:": 'Tipo de dispositivo:',
+  'Type équipement:': 'Tipo de dispositivo:',
   'Canal:': 'Canal:',
   "Nom d'équipement:": 'Nome do dispositivo:',
+  "Nom de l'équipement:": 'Nome do dispositivo:',
   'IdentNo:': 'IdentNo:',
   'Fabricant:': 'Fabricante:',
   'Nom du modèle:': 'Nome do modelo:',
-  'Compteur total de reprises:': 'Total de retransmissões:',
+  'Compteur total de reprises:': 'Total de retries:',
+  'Nombre total de reprises:': 'Total de retries:',
   'Diag en DX:': 'Diagnósticos em DX:',
+  'Compteur de diag en DX:': 'Diagnósticos em DX:',
   'Longueur E/S (octets):': 'Tamanho I/O (bytes):',
+  'Longueur des E/S (octets):': 'Tamanho I/O (bytes):',
   'Nombre de pertes:': 'Vezes perdido:',
   'Tension signal:': 'Tensão do sinal:',
+  'Tension du signal:': 'Tensão do sinal:',
   'Non disponible': 'Não disponível',
 
-  // Disclaimer
+  // === Disclaimer ===
   'Avertissement': 'Aviso legal',
+  'Clause de non-responsabilité': 'Aviso legal',
   'Fin du rapport': 'Fim do relatório',
+  "L'utilisation de ce document n'est autorisée que si la clause de non-responsabilité de la dernière page a été acceptée.":
+    'O uso deste documento só é permitido se o aviso legal da última página tiver sido aceito.',
+  "L'utilisation de ce document n'est permise que si l'avertissement de la dernière page a été accepté.":
+    'O uso deste documento só é permitido se o aviso legal da última página tiver sido aceito.',
   'Signature:': 'Assinatura:',
   'Société:': 'Empresa:',
+  'Entreprise:': 'Empresa:',
   'Nom:': 'Nome:',
 };
 
 const DICT_ES_PT = {
-  // Cabeçalho
+  // === Cabeçalho ===
+  'Informe detallado de red ProfiTrace': 'Relatório detalhado de rede ProfiTrace',
+  'Informe detallado de la red ProfiTrace': 'Relatório detalhado de rede ProfiTrace',
   'Informe detallado de red': 'Relatório detalhado de rede',
+  'Informe detallado de la red': 'Relatório detalhado de rede',
   'ProfiTrace': 'ProfiTrace',
   'Desarrollado por:': 'Desenvolvido por:',
+  'Impulsado por:': 'Desenvolvido por:',
+  'Editado por:': 'Desenvolvido por:',
 
-  // 1
+  // === 1 General ===
   '1 General': '1 Geral',
   'Nombre de la red:': 'Nome da rede:',
+  'Nombre de red:': 'Nome da rede:',
   'Resumen de detalles del proyecto:': 'Resumo dos detalhes do projeto:',
+  'Resumen de los detalles del proyecto:': 'Resumo dos detalhes do projeto:',
   'Ubicación:': 'Local:',
+  'Localización:': 'Local:',
   'Inicio de medición:': 'Início da medição:',
+  'Hora de inicio de la medición:': 'Início da medição:',
+  'Inicio de la medición:': 'Início da medição:',
   'Duración de la medición:': 'Duração da medição:',
+  'Duración de medición:': 'Duração da medição:',
+  'Sólo disponible con medición Wizard': 'Apenas disponível em medição com Wizard',
+  'Solo disponible en medición Wizard': 'Apenas disponível em medição com Wizard',
+  '(Este texto es aplicado por el cliente final pero puede estar incompleto. Consulte la':
+    '(Texto preenchido pelo cliente; pode estar incompleto. Veja a seção',
+  "sección 'Detalles del proyecto' para el texto completo)":
+    "'Detalhes do projeto' para o texto completo)",
+  '(El texto anterior no está definido por el cliente final)':
+    '(O texto acima não é definido pelo cliente)',
 
-  // 2
+  // === 2 Used tools ===
   '2 Herramientas utilizadas': '2 Ferramentas utilizadas',
   'Número de serie del ProfiCore:': 'Número de série do ProfiCore:',
+  'Número de serie de ProfiCore:': 'Número de série do ProfiCore:',
   'Versión de ProfiTrace:': 'Versão do ProfiTrace:',
+  'Versión ProfiTrace:': 'Versão do ProfiTrace:',
 
-  // 3
+  // === 3 Network properties ===
   '3 Propiedades de la red': '3 Propriedades da rede',
+  '3 Propiedades de red': '3 Propriedades da rede',
   'Velocidad de transmisión:': 'Velocidade de transmissão:',
   'Número de maestros:': 'Número de mestres:',
+  'Número de Maestros:': 'Número de mestres:',
   'Número de esclavos:': 'Número de escravos:',
   'Tiempo de ciclo:': 'Tempo de ciclo:',
 
-  // 4
+  // === 4 Conclusion ===
   '4 Conclusión': '4 Conclusão',
   'No se encontraron desviaciones': 'Nenhum desvio encontrado',
+  'No se han encontrado desviaciones': 'Nenhum desvio encontrado',
+  'No se han detectado problemas durante el período de análisis':
+    'Nenhum problema detectado no período de análise',
   'Desviaciones encontradas': 'Desvios encontrados',
+  'Se han detectado problemas durante el período de análisis':
+    'Problemas detectados no período de análise',
 
-  // 5
+  // === 5 Remarks ===
   '5 Resumen de comentarios': '5 Resumo dos comentários',
+  '5 Resumen de observaciones': '5 Resumo dos comentários',
+  'Resumen de comentarios': 'Resumo dos comentários',
   'Ninguno': 'Nenhum',
+  'Ninguna': 'Nenhum',
 
-  // 6 — Tested subjects DP em espanhol
+  // === 6 Tested subjects — DP ===
   '6 Aspectos analizados:': '6 Itens analisados:',
+  '6 Aspectos probados:': '6 Itens analisados:',
+  '6 Elementos analizados:': '6 Itens analisados:',
   '6.1 Esclavos perdidos al menos una vez:':
+    '6.1 Escravos perdidos pelo menos uma vez:',
+  '6.1 Esclavos que se han perdido al menos una vez:':
     '6.1 Escravos perdidos pelo menos uma vez:',
   '6.2 Esclavos que generaron diagnósticos durante el intercambio de datos:':
     '6.2 Escravos que geraram diagnóstico em data exchange:',
+  '6.2 Esclavos que generaron diagnósticos en intercambio de datos:':
+    '6.2 Escravos que geraram diagnóstico em data exchange:',
   '6.3 Dispositivos que causaron respuestas ilegales:':
+    '6.3 Dispositivos que causaram respostas inválidas:',
+  '6.3 Dispositivos que han causado respuestas ilegales:':
     '6.3 Dispositivos que causaram respostas inválidas:',
   '6.4 Dispositivo encontrado en la dirección reservada 126:':
     '6.4 Dispositivo no endereço reservado 126:',
+  '6.4 Dispositivo hallado en la dirección reservada 126:':
+    '6.4 Dispositivo no endereço reservado 126:',
   '6.5 Esclavos que causaron reintentos:':
-    '6.5 Escravos que causaram retransmissões:',
+    '6.5 Escravos que causaram retries:',
+  '6.5 Esclavos que han causado reintentos:':
+    '6.5 Escravos que causaram retries:',
   '6.6 Esclavos que causaron sincronizaciones:':
-    '6.6 Escravos que enviaram sincronizações (syncs):',
+    '6.6 Escravos relacionados a mensagens Sync:',
+  '6.6 Esclavos que han causado sincronizaciones:':
+    '6.6 Escravos relacionados a mensagens Sync:',
   '6.7 Parámetros enviados a los siguientes esclavos:':
     '6.7 Parâmetros enviados aos seguintes escravos:',
+  '6.7 Se han enviado parámetros a los siguientes esclavos:':
+    '6.7 Parâmetros enviados aos seguintes escravos:',
+  'Algunos tipos de sistemas DCS de ABB envían continuamente mensajes Sync. Esto':
+    'Alguns sistemas DCS da ABB enviam mensagens de Sync continuamente. Isso',
+  'no influye en la comunicación del bus. Estos Syncs pueden ser ignorados.':
+    'não afeta a comunicação no barramento. Esses Syncs podem ser ignorados.',
 
-  // 7
+  // === 7 Project details ===
   '7 Detalles del proyecto': '7 Detalhes do projeto',
 
-  // 8 Live list
+  // === 8 Live list ===
   '8 Live list': '8 Live list',
+  '8 Lista activa': '8 Live list',
   'Leyenda:': 'Legenda:',
   'Sin actividad': 'Sem atividade',
+  'Sin acción': 'Sem atividade',
   'Estación maestra': 'Estação mestre',
   'Estación esclava': 'Estação escrava',
+  'Dispositivo perdido': 'Dispositivo perdido',
+  'El dispositivo está perdido': 'Dispositivo perdido',
+  'Dispositivo en intercambio de datos': 'Em data exchange',
+  'El dispositivo está en intercambio de datos': 'Em data exchange',
+  'El dispositivo tiene un error de parámetro': 'Erro de parametrização',
+  'El dispositivo tiene un error de configuración': 'Erro de configuração',
 
-  // 9
+  // === 9 Address list ===
   '9 Lista de direcciones': '9 Lista de endereços',
   'Dirección': 'Endereço',
   'IdentNo': 'IdentNo',
   'Fabricante': 'Fabricante',
   'Nombre del modelo': 'Nome do modelo',
+  'Nombre del Modelo': 'Nome do modelo',
   'Nombre GSD': 'Nome do GSD',
   'Maestro': 'Mestre',
   'Esclavo': 'Escravo',
 
-  // 10 Bar graph — DP
+  // === 10 Bar graph — DP ===
   '10 Gráfico de barras': '10 Gráfico de barras',
+  '10 Diagrama de barras': '10 Gráfico de barras',
   'Tipo de segmento:': 'Tipo de segmento:',
+  '<no establecido>': '<não definido>',
+  '<no configurado>': '<não definido>',
   'Tensión diferencial AB': 'Tensão diferencial AB',
   'Tensión diferencial AB estable': 'Tensão diferencial AB estável',
+  'Segmento / Punto de medición: Segment 1 / Measuring point 1 (1/1):':
+    'Segmento / Ponto de medição: Segment 1 / Measuring point 1 (1/1):',
+  'Segmento / Punto de medición: Segment 1 / Measuring point 1 (1/2):':
+    'Segmento / Ponto de medição: Segment 1 / Measuring point 1 (1/2):',
+  'Segmento / Punto de medición: Segment 1 / Measuring point 1 (2/2):':
+    'Segmento / Ponto de medição: Segment 1 / Measuring point 1 (2/2):',
 
-  // 11 Device details — DP
+  // === 11 Device details — DP ===
   '11 Detalles del dispositivo': '11 Detalhes do dispositivo',
+  '11 Detalles de dispositivo': '11 Detalhes do dispositivo',
+  '11 Detalles de los dispositivos': '11 Detalhes do dispositivo',
+  'Segmento / Punto de medición: Segment 1 / Measuring point 1':
+    'Segmento / Ponto de medição: Segment 1 / Measuring point 1',
   'Dirección:': 'Endereço:',
   'Tipo de dispositivo:': 'Tipo de dispositivo:',
+  'Tipo del dispositivo:': 'Tipo de dispositivo:',
   'Canal:': 'Canal:',
   'Nombre del dispositivo:': 'Nome do dispositivo:',
+  'Nombre de dispositivo:': 'Nome do dispositivo:',
   'IdentNo:': 'IdentNo:',
   'Fabricante:': 'Fabricante:',
   'Nombre del modelo:': 'Nome do modelo:',
-  'Total de reintentos:': 'Total de retransmissões:',
+  'Total de reintentos:': 'Total de retries:',
+  'Recuento total de reintentos:': 'Total de retries:',
   'Diagnósticos durante DX:': 'Diagnósticos em DX:',
+  'Recuento de diag durante DX:': 'Diagnósticos em DX:',
   'Longitud E/S (bytes):': 'Tamanho I/O (bytes):',
+  'Longitud de E/S (bytes):': 'Tamanho I/O (bytes):',
   'Veces perdido:': 'Vezes perdido:',
+  'Veces que se ha perdido:': 'Vezes perdido:',
   'Tensión de la señal:': 'Tensão do sinal:',
+  'Tensión de señal:': 'Tensão do sinal:',
   'No disponible': 'Não disponível',
 
-  // Disclaimer
+  // === Disclaimer ===
   'Aviso': 'Aviso legal',
+  'Aviso legal': 'Aviso legal',
+  'Descargo de responsabilidad': 'Aviso legal',
   'Fin del informe': 'Fim do relatório',
+  'El uso de este documento solo está permitido si se ha aceptado el descargo de responsabilidad de la última página.':
+    'O uso deste documento só é permitido se o aviso legal da última página tiver sido aceito.',
   'Firma:': 'Assinatura:',
   'Empresa:': 'Empresa:',
+  'Compañía:': 'Empresa:',
   'Nombre:': 'Nome:',
 };
 
 /* ----------------------------------------------------------------------------
    ASSINATURAS DE IDIOMA — DP
    Frases-âncora que aparecem com alta frequência em PDFs DP do ProfiTrace.
+   Importante: rótulos do bar graph ("AB Diff voltage") são mantidos em inglês
+   mesmo em PDFs FR/ES — por isso NÃO são usados como assinatura.
    ---------------------------------------------------------------------------- */
 
 const LANG_SIGNATURES = {
-  en: ['profitrace detailed network report', 'network properties', 'address list', 'ab diff voltage', 'cycle time'],
-  fr: ['rapport de réseau détaillé', 'propriétés du réseau', "liste d'adresses", 'tension différentielle ab'],
-  es: ['informe detallado de red', 'propiedades de la red', 'lista de direcciones', 'tensión diferencial ab'],
+  en: [
+    'profitrace detailed network report',
+    'tested subjects',
+    'transmission speed',
+    'cycle time',
+    'live list',
+    'address list',
+    'bar graph',
+    'device details',
+  ],
+  fr: [
+    'rapport détaillé',
+    'sujets testés',
+    'propriétés du réseau',
+    "liste d'adresses",
+    'vitesse de transmission',
+    'temps de cycle',
+    'résumé des remarques',
+  ],
+  es: [
+    'informe detallado de red',
+    'aspectos analizados',
+    'propiedades de la red',
+    'lista de direcciones',
+    'velocidad de transmisión',
+    'tiempo de ciclo',
+    'resumen de comentarios',
+  ],
 };
 
 /* Oscilograma — em DP a frase é "Oscilloscope image of device X (AB Diff voltage, Min)" */
@@ -764,6 +1148,8 @@ const state = {
   pageCount: 0,
   translatedBlob: null,
   translatedName: null,
+  seniorData: null,
+  seniorFindings: null,
   stats: {
     matchesExact: 0,
     matchesPattern: 0,
@@ -834,12 +1220,18 @@ function resetUI() {
   $('dropHint').textContent = 'Aceita PDFs do ProfiTrace em inglês, francês ou espanhol';
   $('btnTranslate').disabled = true;
   $('btnDownload').style.display = 'none';
+  $('btnDownloadWord').style.display = 'none';
   $('log').classList.remove('active');
   $('logBody').innerHTML = '';
   $('logFill').style.width = '0%';
   $('summary').classList.remove('active');
   $('summaryGrid').innerHTML = '';
   $('summaryNote').innerHTML = '';
+  $('senior').classList.remove('active');
+  $('seniorMeta').innerHTML = '';
+  $('seniorFindings').innerHTML = '';
+  state.seniorData = null;
+  state.seniorFindings = null;
   hideWarn();
   setHeaderStatus('Pronto');
   $('fileInput').value = '';
@@ -965,8 +1357,33 @@ function startPhrase(it) {
    TRADUÇÃO DE FRASES
    ---------------------------------------------------------------------------- */
 
+/* Strip prefixo numérico de seção/subseção.
+   "6.1 Slaves that..." → { stripped: "Slaves that...", prefix: "6.1 " }
+   "10.1.1 Measurement..." → { stripped: "Measurement...", prefix: "10.1.1 " }
+   "1. General" → { stripped: "General", prefix: "1. " }
+   Aceita ponto final opcional (formato usado pelo Manual oficial Procentec).
+   Útil porque o ProfiTrace varia a numeração entre versões (ex: Live list
+   pode ser seção 7, 8, ou 9 dependendo se há "Project details" inserido). */
+const SECTION_PREFIX_RE = /^(\d+(?:\.\d+)*\.?\s+)/;
+
+function stripSectionPrefix(text) {
+  const m = text.match(SECTION_PREFIX_RE);
+  if (m) return { stripped: text.slice(m[1].length), prefix: m[1] };
+  return { stripped: text, prefix: '' };
+}
+
+/* Ordena chaves do dicionário por tamanho decrescente para que match
+   parcial pegue a chave mais específica primeiro. */
+function getSortedKeys(dict) {
+  if (dict.__sortedKeys) return dict.__sortedKeys;
+  const keys = Object.keys(dict).sort((a, b) => b.length - a.length);
+  Object.defineProperty(dict, '__sortedKeys', { value: keys, enumerable: false });
+  return keys;
+}
+
 function translatePhrases(pages, lang) {
   const dict = getDictForLang(lang);
+  const sortedKeys = getSortedKeys(dict);
   const oscRe = OSCILLO_RE[lang] || OSCILLO_RE.en;
   const pageRe = PAGE_RE[lang] || PAGE_RE.en;
   const subsByPage = [];
@@ -980,19 +1397,29 @@ function translatePhrases(pages, lang) {
       let translated = null;
       let matchType = null;
 
-      // 1) Match exato
+      // 1) Match exato no texto cru
       if (dict.hasOwnProperty(text)) {
         translated = dict[text];
         matchType = 'exact';
       }
 
-      // 2) Tokens curtos
+      // 2) Match exato após remover prefixo de seção numérica (6.1, 10.1.1 etc)
+      //    Isso resolve o problema de o ProfiTrace renumerar seções entre versões.
+      if (!translated) {
+        const { stripped, prefix } = stripSectionPrefix(text);
+        if (prefix && dict.hasOwnProperty(stripped)) {
+          translated = prefix + dict[stripped];
+          matchType = 'exact';
+        }
+      }
+
+      // 3) Tokens curtos
       if (!translated && SHORT_TOKENS_PT[text]) {
         translated = SHORT_TOKENS_PT[text];
         matchType = 'short';
       }
 
-      // 3) Oscilograma — DP usa AB Diff voltage / AB Diff stable voltage
+      // 4) Oscilograma — DP usa AB Diff voltage / AB Diff stable voltage
       if (!translated) {
         const m = text.match(oscRe);
         if (m) {
@@ -1004,7 +1431,7 @@ function translatePhrases(pages, lang) {
         }
       }
 
-      // 4) "Page X / Y"
+      // 5) "Page X / Y"
       if (!translated) {
         const m = text.match(pageRe);
         if (m) {
@@ -1013,26 +1440,38 @@ function translatePhrases(pages, lang) {
         }
       }
 
-      // 5) Prefixo seguido de valor: ex. "Address: 1", "Signal voltage: Min: 6.11 Volt..."
+      // 6) Prefixo "rótulo: valor" — busca em texto cru e em texto sem prefixo numérico
       if (!translated) {
-        for (const key of Object.keys(dict)) {
+        const { stripped, prefix } = stripSectionPrefix(text);
+        for (const key of sortedKeys) {
           if (!key.endsWith(':')) continue;
           if (text.startsWith(key + ' ') || text === key) {
             const rest = text.slice(key.length);
-            const restTrans = translateInlineTokens(rest, lang);
-            translated = dict[key] + restTrans;
+            translated = dict[key] + translateInlineTokens(rest, lang);
+            matchType = 'pattern';
+            break;
+          }
+          if (prefix && (stripped.startsWith(key + ' ') || stripped === key)) {
+            const rest = stripped.slice(key.length);
+            translated = prefix + dict[key] + translateInlineTokens(rest, lang);
             matchType = 'pattern';
             break;
           }
         }
       }
 
-      // 6) Linhas que começam com chave (sem :)
+      // 7) Linhas que começam com chave (sem :) — ordem decrescente por tamanho
       if (!translated) {
-        for (const key of Object.keys(dict)) {
+        const { stripped, prefix } = stripSectionPrefix(text);
+        for (const key of sortedKeys) {
           if (key.length < 8) continue;
           if (text.startsWith(key) && text !== key) {
             translated = dict[key] + text.slice(key.length);
+            matchType = 'pattern';
+            break;
+          }
+          if (prefix && stripped.startsWith(key) && stripped !== key) {
+            translated = prefix + dict[key] + stripped.slice(key.length);
             matchType = 'pattern';
             break;
           }
@@ -1063,7 +1502,8 @@ function translatePhrases(pages, lang) {
 
 function translateMetric(m, lang) {
   const M = m.trim();
-  // DP metrics
+  // DP metrics — formas oficiais e abreviadas
+  if (/^AB Differential voltage$/i.test(M)) return 'Tensão diferencial AB';
   if (/^AB Diff voltage$/i.test(M)) return 'Tensão diferencial AB';
   if (/^AB Diff stable voltage$/i.test(M)) return 'Tensão diferencial AB estável';
   if (/^Tension différentielle AB$/i.test(M)) return 'Tensão diferencial AB';
@@ -1234,10 +1674,10 @@ async function runTranslation() {
     }
     log(`Idioma detectado: ${lang.toUpperCase()}`, 'ok');
     if (lang === 'fr') {
-      log('Francês: dicionário DP em validação. Reporte rótulos não traduzidos.', 'warn');
+      log('Francês: cobertura ampla. Reporte rótulos não traduzidos para refinar o dicionário.', 'warn');
     }
     if (lang === 'es') {
-      log('Espanhol é experimental nesta versão (sem PDF real para calibração ainda)', 'warn');
+      log('Espanhol: cobertura ampla. Reporte rótulos não traduzidos para refinar o dicionário.', 'warn');
     }
 
     setStage('Traduzindo rótulos', 55);
@@ -1269,9 +1709,11 @@ async function runTranslation() {
     log(`Tamanho: ${formatBytes(blob.size)}`);
 
     $('btnDownload').style.display = 'inline-flex';
+    $('btnDownloadWord').style.display = 'inline-flex';
     setHeaderStatus('Tradução pronta');
 
     showSummary(lang, totalSubs);
+    runSeniorDiagnosis(pages, lang);
 
   } catch (e) {
     console.error(e);
@@ -1280,6 +1722,457 @@ async function runTranslation() {
     setHeaderStatus('Erro');
     $('btnTranslate').disabled = false;
   }
+}
+
+/* ============================================================================
+   DIAGNÓSTICO SÊNIOR — extração de campos + classificação Traffic Light
+   ============================================================================
+   Filosofia operacional (trava):
+   - Valores SÓ vêm do PDF original. Se um campo não está no PDF, é omitido.
+   - Limites SÓ vêm de fontes oficiais e auditáveis:
+       * Procentec ProfiTrace 2 Manual v5.0.2 (ago 2016), §7.2 Traffic Light
+       * IEC 61158-3 / EN 50170 (PROFIBUS DP physical layer)
+       * Experiência consolidada de campo (régua conservadora 4–7 V)
+   - Cada achado cita a regra que disparou.
+   - Nenhuma inferência além do que os dados sustentam.
+   ============================================================================ */
+
+const SENIOR_RULES = {
+  // Idle voltage — Manual Procentec p.66, §7.2 (PROFIBUS Traffic Light)
+  idleVoltage: {
+    greenMin: 0.9,
+    warnMin: 0.3,
+    redMax: 0.3,
+    nominalLow: 0.4,
+    nominalHigh: 1.2,
+    missingTerm: 1.8,
+    source: 'Manual Procentec §7.2 (Traffic Light) + IEC 61158-3',
+  },
+  // AB Differential voltage — IEC 61158-3 + régua de campo
+  // Procentec default = 2,5 V (permissivo); régua técnica = 4–7 V nominal
+  abDiff: {
+    nominalLow: 4.0,
+    nominalHigh: 7.0,
+    warnLow: 3.0,
+    redLow: 2.5,             // Procentec Bargraph default
+    suspectHigh: 7.5,        // possível reflexão/term ausente
+    missingTermHigh: 8.5,
+    source: 'IEC 61158-3 (4–7 V nominal); Procentec Bargraph default 2,5 V',
+  },
+  // Risk margin (semáforo Procentec)
+  riskMargin: {
+    greenMin: 60,
+    warnMin: 40,
+    source: 'Manual Procentec §7.3 (Risk Margin)',
+  },
+};
+
+/* Extrai linhas concatenadas de todas as páginas, preservando ordem original */
+function getAllPhrases(pages) {
+  const out = [];
+  for (const p of pages) {
+    for (const line of p.lines) {
+      const t = line.str.trim();
+      if (t) out.push(t);
+    }
+  }
+  return out;
+}
+
+/* Encontra a linha que começa com um rótulo e devolve o valor depois dos ":". */
+function findLabelValue(phrases, labels) {
+  for (const ph of phrases) {
+    for (const label of labels) {
+      // Aceita prefixo numérico opcional ("3.1 Number of slaves:")
+      const stripped = ph.replace(/^\d+(?:\.\d+)*\.?\s+/, '');
+      if (stripped.startsWith(label)) {
+        return stripped.slice(label.length).trim();
+      }
+    }
+  }
+  return null;
+}
+
+/* Conta quantos blocos "Address: N" aparecem após cada label de subseção 6.x */
+function findSubsectionEntries(phrases, sectionLabels) {
+  for (let i = 0; i < phrases.length; i++) {
+    const stripped = phrases[i].replace(/^\d+(?:\.\d+)*\.?\s+/, '');
+    if (sectionLabels.some(l => stripped.startsWith(l))) {
+      // Conta entries "Address: N" até a próxima seção 6.x ou seção numerada
+      const addrs = [];
+      for (let j = i + 1; j < phrases.length; j++) {
+        const next = phrases[j];
+        if (/^\d+(?:\.\d+)*\.?\s+\S/.test(next) && j > i + 1) {
+          // Outra subseção começou — só para se for diferente da atual
+          const nextStripped = next.replace(/^\d+(?:\.\d+)*\.?\s+/, '');
+          if (!sectionLabels.some(l => nextStripped.startsWith(l))) break;
+        }
+        const m = next.match(/^Address:\s*(\d+)/i);
+        if (m) addrs.push(parseInt(m[1], 10));
+      }
+      return addrs;
+    }
+  }
+  return null; // seção não encontrada — diferente de "encontrada e vazia"
+}
+
+/* Parser de tensão a partir de string como "Min: 6.07 V, Max: 6.16 V, Last: 6.14 V"
+   ou "6.07 V" — devolve { min, max, last, single } com null para ausentes. */
+function parseVoltageRange(str) {
+  if (!str) return null;
+  const out = { min: null, max: null, last: null, single: null };
+  const reMin = /Min:?\s*(-?\d+[.,]?\d*)\s*V/i;
+  const reMax = /Max:?\s*(-?\d+[.,]?\d*)\s*V/i;
+  const reLast = /Last:?\s*(-?\d+[.,]?\d*)\s*V/i;
+  const m1 = str.match(reMin); if (m1) out.min = parseFloat(m1[1].replace(',', '.'));
+  const m2 = str.match(reMax); if (m2) out.max = parseFloat(m2[1].replace(',', '.'));
+  const m3 = str.match(reLast); if (m3) out.last = parseFloat(m3[1].replace(',', '.'));
+  // Se não veio nada com Min/Max/Last, tenta número solto
+  if (out.min === null && out.max === null && out.last === null) {
+    const m = str.match(/(-?\d+[.,]?\d*)\s*V/);
+    if (m) out.single = parseFloat(m[1].replace(',', '.'));
+  }
+  return out;
+}
+
+/* Extrai blocos de Slave details / Device details — cada bloco vira um objeto
+   com {address, manufacturer, model, signalVoltage, retries, diagDx, timesLost}. */
+function extractSlaveDetails(phrases) {
+  const slaves = [];
+  let current = null;
+  const flush = () => {
+    if (current && current.address !== undefined) slaves.push(current);
+    current = null;
+  };
+
+  for (const ph of phrases) {
+    // Cabeçalho de bloco — "Address: 13" geralmente é primeira linha
+    const mAddr = ph.match(/^Address:\s*(\d+)\s*$/i);
+    if (mAddr) {
+      flush();
+      current = { address: parseInt(mAddr[1], 10) };
+      continue;
+    }
+    if (!current) continue;
+
+    let m;
+    if ((m = ph.match(/^Manufacturer:\s*(.+)$/i))) current.manufacturer = m[1].trim();
+    else if ((m = ph.match(/^Model name:\s*(.+)$/i))) current.model = m[1].trim();
+    else if ((m = ph.match(/^Signal voltage:\s*(.+)$/i))) {
+      current.signalVoltage = parseVoltageRange(m[1]);
+    }
+    else if ((m = ph.match(/^Total retry count:\s*(\d+)/i))) current.retries = parseInt(m[1], 10);
+    else if ((m = ph.match(/^Diag count while DX:\s*(\d+)/i))) current.diagDx = parseInt(m[1], 10);
+    else if ((m = ph.match(/^Times lost:\s*(\d+)/i))) current.timesLost = parseInt(m[1], 10);
+    else if ((m = ph.match(/^Bytes I\/O length:\s*(.+)$/i)) ||
+             (m = ph.match(/^I\/O length \(bytes\):\s*(.+)$/i))) {
+      current.ioLength = m[1].trim();
+    }
+  }
+  flush();
+  return slaves;
+}
+
+/* Núcleo: aplica regras e produz findings.
+   Cada finding tem { severity, title, detail, interp, rule }. */
+function classifyDiagnosis(data) {
+  const f = [];
+
+  // === 6.x — Eventos do protocolo (cada subseção é um evento DP) ===
+  // Regra: presença de slaves em qualquer subseção 6.x = warning ou crítico
+
+  if (data.lostSlaves && data.lostSlaves.length > 0) {
+    f.push({
+      severity: 'critical',
+      title: 'Escravos perdidos detectados',
+      detail: `${data.lostSlaves.length} escravo(s) perdidos pelo menos uma vez: endereços ${data.lostSlaves.join(', ')}`,
+      interp: 'Slave lost indica que o dispositivo saiu do data exchange durante a medição. Causas típicas: cabo intermitente, fonte do dispositivo, EMI severa, terminação errada.',
+      rule: 'Manual Procentec §7.2 — "Slave lost" → semáforo vermelho, NÃO volta a verde sem reset.',
+    });
+  }
+
+  if (data.diagSlaves && data.diagSlaves.length > 0) {
+    f.push({
+      severity: 'warn',
+      title: 'Diagnósticos gerados em DX',
+      detail: `${data.diagSlaves.length} escravo(s) geraram diagnóstico durante data exchange: endereços ${data.diagSlaves.join(', ')}`,
+      interp: 'Ext.Diag em DX normalmente indica problema no I/O do dispositivo (fim de curso, falha de canal, módulo offline). Inspecionar com ProfiCaptain ou Info Panel.',
+      rule: 'Manual Procentec §7.2 — Critical diagnosis (Ext-diag) → amarelo.',
+    });
+  }
+
+  if (data.illegalSlaves && data.illegalSlaves.length > 0) {
+    f.push({
+      severity: 'critical',
+      title: 'Respostas inválidas (Illegals)',
+      detail: `${data.illegalSlaves.length} dispositivo(s) com respostas inválidas: endereços ${data.illegalSlaves.join(', ')}`,
+      interp: 'Illegals frequentemente indicam endereço duplicado, dispositivo defeituoso ou colisão de telegrama. É crítico — investigar imediatamente.',
+      rule: 'Manual Procentec §7.2 — Illegals → vermelho, NÃO volta a verde sem reset.',
+    });
+  }
+
+  if (data.retrySlaves && data.retrySlaves.length > 0) {
+    f.push({
+      severity: 'warn',
+      title: 'Retries detectados',
+      detail: `${data.retrySlaves.length} escravo(s) causaram retries: endereços ${data.retrySlaves.join(', ')}`,
+      interp: 'Retry indica telegrama perdido — o mestre teve que retransmitir. Causa típica: amplitude baixa, ruído, reflexão. Inspecionar oscilograma do dispositivo.',
+      rule: 'Manual Procentec §7.2 — Repeats → amarelo, NÃO volta a verde sem reset.',
+    });
+  }
+
+  if (data.syncSlaves && data.syncSlaves.length > 0) {
+    // Sync pode ser normal em sistemas ABB DCS — não classificar como crítico
+    f.push({
+      severity: 'warn',
+      title: 'Mensagens Sync detectadas',
+      detail: `${data.syncSlaves.length} escravo(s) relacionados a Sync: endereços ${data.syncSlaves.join(', ')}`,
+      interp: 'Em sistemas ABB DCS, Sync para escravos inexistentes é normal e pode ser ignorado. Em outros sistemas, investigar configuração do mestre.',
+      rule: 'Manual Procentec §5.11 — Syncs ABB DCS são normais; "Exclude Syncs from test conclusion".',
+    });
+  }
+
+  if (data.alienSlaves && data.alienSlaves.length > 0) {
+    f.push({
+      severity: 'warn',
+      title: 'Escravos não declarados (alien)',
+      detail: `${data.alienSlaves.length} dispositivo(s) presentes na rede sem estar no projeto do mestre: endereços ${data.alienSlaves.join(', ')}`,
+      interp: 'Alien slave consome banda do barramento e pode indicar dispositivo de manutenção esquecido na rede, ou configuração desatualizada do mestre.',
+      rule: 'Boa prática PI — todo dispositivo no bus deve estar no projeto do mestre.',
+    });
+  }
+
+  if (data.watchdogDisabled && data.watchdogDisabled.length > 0) {
+    f.push({
+      severity: 'warn',
+      title: 'Watchdog desabilitado',
+      detail: `${data.watchdogDisabled.length} escravo(s) com watchdog desabilitado: endereços ${data.watchdogDisabled.join(', ')}`,
+      interp: 'Watchdog protege o escravo contra falha do mestre — sem ele, saídas podem ficar travadas no último valor se o mestre parar. Crítico em aplicações com atuadores.',
+      rule: 'Boa prática segurança PI — watchdog deve estar ativo em escravos com saídas físicas.',
+    });
+  }
+
+  if (data.address0Found) {
+    f.push({
+      severity: 'critical',
+      title: 'Dispositivo no endereço 0',
+      detail: `Escravo ou mestre classe 1 no endereço 0`,
+      interp: 'O endereço 0 é reservado para dispositivos de engenharia (classe 2 master) — uso por slave ou mestre classe 1 é violação do padrão.',
+      rule: 'IEC 61158-3 / PNO — endereço 0 reservado para Class 2 Master (engenharia).',
+    });
+  }
+
+  if (data.address126Found) {
+    f.push({
+      severity: 'warn',
+      title: 'Dispositivo no endereço reservado 126',
+      detail: 'Dispositivo encontrado no endereço 126',
+      interp: 'Endereço 126 é reservado como default factory — dispositivo aqui geralmente é equipamento novo não comissionado. Definir endereço definitivo.',
+      rule: 'IEC 61158-3 — endereço 126 é default factory, deve ser alterado em comissionamento.',
+    });
+  }
+
+  // === Slave details — análise individual por dispositivo ===
+  if (data.slaves && data.slaves.length > 0) {
+    const lowSignal = [];   // < 2,5 V — crítico
+    const midSignal = [];   // 2,5 a 4 V — abaixo do nominal
+    const highSignal = [];  // > 7,5 V — suspeito (reflexão / term. ausente)
+    const veryHighSignal = []; // > 8,5 V — terminação provável ausente
+
+    for (const s of data.slaves) {
+      if (!s.signalVoltage) continue;
+      const v = s.signalVoltage.min !== null ? s.signalVoltage.min :
+                (s.signalVoltage.single !== null ? s.signalVoltage.single : null);
+      const vMax = s.signalVoltage.max !== null ? s.signalVoltage.max : v;
+      if (v === null) continue;
+
+      if (v < SENIOR_RULES.abDiff.redLow) {
+        lowSignal.push({ addr: s.address, v, model: s.model || '' });
+      } else if (v < SENIOR_RULES.abDiff.nominalLow) {
+        midSignal.push({ addr: s.address, v, model: s.model || '' });
+      }
+      if (vMax !== null && vMax > SENIOR_RULES.abDiff.missingTermHigh) {
+        veryHighSignal.push({ addr: s.address, v: vMax, model: s.model || '' });
+      } else if (vMax !== null && vMax > SENIOR_RULES.abDiff.suspectHigh) {
+        highSignal.push({ addr: s.address, v: vMax, model: s.model || '' });
+      }
+    }
+
+    if (lowSignal.length > 0) {
+      f.push({
+        severity: 'critical',
+        title: 'Amplitude do sinal abaixo do limite crítico (< 2,5 V)',
+        detail: lowSignal.map(s => `Addr ${s.addr}: ${s.v.toFixed(2)} V`).join(' · '),
+        interp: 'Amplitude muito baixa — alto risco de erro de leitura. Causas: spur line longa, derivação sem necessidade, impedância do cabo, dispositivo no fim de barramento longo sem repetidor.',
+        rule: 'Manual Procentec §5.6 (Bargraph red line, default 2,5 V); régua técnica IEC 61158-3.',
+      });
+    }
+    if (midSignal.length > 0) {
+      f.push({
+        severity: 'warn',
+        title: 'Amplitude do sinal abaixo do nominal (3,0–4,0 V)',
+        detail: midSignal.map(s => `Addr ${s.addr}: ${s.v.toFixed(2)} V`).join(' · '),
+        interp: 'Nível operacional, mas com margem reduzida. Em ambiente com ruído, pode degradar. Verificar comprimento de cabo, derivações e impedância.',
+        rule: 'IEC 61158-3 — nominal 4–7 V (régua técnica). Procentec default permissivo 2,5 V.',
+      });
+    }
+    if (veryHighSignal.length > 0) {
+      f.push({
+        severity: 'critical',
+        title: 'Amplitude excessiva — terminação provavelmente ausente (> 8,5 V)',
+        detail: veryHighSignal.map(s => `Addr ${s.addr}: ${s.v.toFixed(2)} V`).join(' · '),
+        interp: 'Amplitudes muito altas indicam reflexão por terminador ausente, terminador sem alimentação ou rompimento do cabo. Inspecionar oscilograma desses dispositivos (efeito "up-down" descrito no Manual §9.2).',
+        rule: 'Manual Procentec §9.2 (Termination missing or wire break) — reflexões elevam amplitude média.',
+      });
+    } else if (highSignal.length > 0) {
+      f.push({
+        severity: 'warn',
+        title: 'Amplitude do sinal acima do nominal (> 7,5 V)',
+        detail: highSignal.map(s => `Addr ${s.addr}: ${s.v.toFixed(2)} V`).join(' · '),
+        interp: 'Possível reflexão leve ou terminação parcial. Pode ser normal em barramentos curtos, mas vale inspecionar oscilograma.',
+        rule: 'IEC 61158-3 + Manual Procentec §9.2.',
+      });
+    }
+  }
+
+  return f;
+}
+
+/* Pipeline completo */
+function runSeniorDiagnosis(pages, lang) {
+  // Só roda em EN — extração estrutural usa rótulos em inglês (forma canônica
+  // do ProfiTrace, presente em todos os relatórios independente do idioma).
+  // Para FR/ES, faríamos um mapeamento reverso primeiro — não implementado aqui
+  // para manter trava operacional.
+  if (lang !== 'en') {
+    log('Diagnóstico Sênior disponível apenas para relatórios em inglês nesta versão.', 'warn');
+    return;
+  }
+
+  log('Executando Diagnóstico Sênior…');
+  setStage('Analisando achados técnicos', 95);
+
+  try {
+    const phrases = getAllPhrases(pages);
+
+    const data = {
+      networkName: findLabelValue(phrases, ['Network name:']),
+      transmissionSpeed: findLabelValue(phrases, ['Transmission speed:']),
+      cycleTime: findLabelValue(phrases, ['Cycle time:']),
+      numMasters: findLabelValue(phrases, ['Number of Masters:', 'Number of masters:']),
+      numSlaves: findLabelValue(phrases, ['Number of slaves:']),
+
+      lostSlaves: findSubsectionEntries(phrases, [
+        'Slaves that have been lost at least one time',
+      ]),
+      diagSlaves: findSubsectionEntries(phrases, [
+        'Slaves that generated diagnostics while in data exchange',
+      ]),
+      illegalSlaves: findSubsectionEntries(phrases, [
+        'Devices that have caused illegal responses',
+      ]),
+      retrySlaves: findSubsectionEntries(phrases, [
+        'Slaves that caused retries',
+      ]),
+      syncSlaves: findSubsectionEntries(phrases, [
+        'Slaves that caused syncs',
+      ]),
+      alienSlaves: findSubsectionEntries(phrases, [
+        'The following alien slaves are found',
+      ]),
+      watchdogDisabled: findSubsectionEntries(phrases, [
+        'The watchdog on the following slaves are not enabled',
+        'The watchdog on the following slaves is not enabled',
+      ]),
+      address0Found: !!phrases.find(p =>
+        p.replace(/^\d+(?:\.\d+)*\.?\s+/, '').startsWith('Slave or class 1 master found on address 0')
+      ),
+      address126Found: !!phrases.find(p =>
+        p.replace(/^\d+(?:\.\d+)*\.?\s+/, '').startsWith('Device found on reserved address 126')
+      ),
+      slaves: extractSlaveDetails(phrases),
+    };
+
+    const findings = classifyDiagnosis(data);
+    state.seniorData = data;
+    state.seniorFindings = findings;
+
+    renderSeniorDiagnosis(data, findings);
+    log(`Diagnóstico Sênior: ${findings.length} achado(s)`, 'ok');
+  } catch (e) {
+    console.error(e);
+    log('Diagnóstico Sênior falhou: ' + e.message, 'warn');
+  }
+}
+
+function renderSeniorDiagnosis(data, findings) {
+  const hasCritical = findings.some(f => f.severity === 'critical');
+  const hasWarn = findings.some(f => f.severity === 'warn');
+
+  // Badge geral
+  const badge = $('seniorBadge');
+  const badgeText = $('seniorBadgeText');
+  badge.className = 'senior-badge ' + (
+    hasCritical ? 'senior-status-critical' :
+    hasWarn ? 'senior-status-warn' :
+    'senior-status-ok'
+  );
+  badgeText.textContent = hasCritical ? 'Crítico' : hasWarn ? 'Atenção' : 'OK';
+
+  // Meta — só campos efetivamente extraídos
+  const metaItems = [];
+  if (data.networkName) metaItems.push(`<span class="meta-item"><strong>Rede:</strong>${escapeHtml(data.networkName)}</span>`);
+  if (data.transmissionSpeed) metaItems.push(`<span class="meta-item"><strong>Velocidade:</strong>${escapeHtml(data.transmissionSpeed)}</span>`);
+  if (data.cycleTime) metaItems.push(`<span class="meta-item"><strong>Ciclo:</strong>${escapeHtml(data.cycleTime)}</span>`);
+  if (data.numMasters) metaItems.push(`<span class="meta-item"><strong>Mestres:</strong>${escapeHtml(data.numMasters)}</span>`);
+  if (data.numSlaves) metaItems.push(`<span class="meta-item"><strong>Escravos:</strong>${escapeHtml(data.numSlaves)}</span>`);
+  if (data.slaves && data.slaves.length > 0) {
+    metaItems.push(`<span class="meta-item"><strong>Escravos com dados:</strong>${data.slaves.length}</span>`);
+  }
+  $('seniorMeta').innerHTML = metaItems.join('');
+
+  // Findings
+  const container = $('seniorFindings');
+  container.innerHTML = '';
+
+  if (findings.length === 0) {
+    const ok = document.createElement('div');
+    ok.className = 'senior-finding sev-ok';
+    ok.innerHTML = `
+      <div class="f-title">✓ Nenhum desvio detectado pelo Diagnóstico Sênior</div>
+      <div class="f-interp">Nenhum evento crítico (slave lost, illegals, address 0/126), nenhum diagnóstico em DX, nenhum retry, nenhuma anomalia de amplitude detectada nos dados extraídos do PDF.</div>
+      <div class="f-rule"><strong>Importante:</strong> ausência de achado aqui não substitui análise da Cópia Fiel do relatório original. Campos que o ProfiTrace não exportou para o PDF não podem ser avaliados.</div>
+    `;
+    container.appendChild(ok);
+  } else {
+    // Agrupar por gravidade
+    const groups = [
+      { sev: 'critical', label: 'Crítico — ação imediata', items: findings.filter(f => f.severity === 'critical') },
+      { sev: 'warn', label: 'Atenção — investigar', items: findings.filter(f => f.severity === 'warn') },
+    ];
+    for (const g of groups) {
+      if (g.items.length === 0) continue;
+      const title = document.createElement('div');
+      title.className = 'senior-section-title';
+      title.textContent = `${g.label} · ${g.items.length}`;
+      container.appendChild(title);
+
+      for (const item of g.items) {
+        const div = document.createElement('div');
+        div.className = 'senior-finding sev-' + item.severity;
+        const icon = item.severity === 'critical' ? '⛔' : '⚠';
+        div.innerHTML = `
+          <div class="f-title">${icon} ${escapeHtml(item.title)}</div>
+          ${item.detail ? `<div class="f-detail">${escapeHtml(item.detail)}</div>` : ''}
+          ${item.interp ? `<div class="f-interp">${escapeHtml(item.interp)}</div>` : ''}
+          <div class="f-rule"><strong>Fonte:</strong> ${escapeHtml(item.rule)}</div>
+        `;
+        container.appendChild(div);
+      }
+    }
+  }
+
+  $('senior').classList.add('active');
 }
 
 function showSummary(lang, totalSubs) {
@@ -1295,8 +2188,8 @@ function showSummary(lang, totalSubs) {
     `<div class="summary-cell"><div class="label">${c.label}</div><div class="value">${c.value}</div></div>`
   ).join('');
   let note = 'Imagens (live list, gráficos de barras, oscilogramas) e números preservados intactos do PDF original. ';
-  if (lang === 'fr') note += '<br><strong>FR:</strong> dicionário DP em validação — alguns rótulos podem aparecer ainda em francês.';
-  if (lang === 'es') note += '<br><strong>ES é experimental:</strong> dicionário ainda não calibrado com PDF real em espanhol.';
+  if (lang === 'fr') note += '<br><strong>FR:</strong> dicionário com cobertura ampla — se algum rótulo aparecer em francês, reporte para calibração.';
+  if (lang === 'es') note += '<br><strong>ES:</strong> dicionário com cobertura ampla — se algum rótulo aparecer em espanhol, reporte para calibração.';
   $('summaryNote').innerHTML = note;
   $('summary').classList.add('active');
 }
@@ -1314,6 +2207,297 @@ function downloadTranslated() {
     a.remove();
   }, 100);
 }
+
+/* ----------------------------------------------------------------------------
+   EXPORT WORD (.docx)
+   Estratégia: renderiza cada página do PDF traduzido como PNG em alta resolução
+   e empilha num .docx — mantém layout 100% fiel (gráficos, oscilogramas,
+   tabelas) com a vantagem de o usuário poder anexar, imprimir ou editar
+   cabeçalho/rodapé no Word.
+   ---------------------------------------------------------------------------- */
+
+async function generateWord() {
+  if (!state.translatedBlob) {
+    showWarn('Gere a tradução primeiro.');
+    return;
+  }
+  if (typeof docx === 'undefined' || typeof saveAs === 'undefined') {
+    showWarn('Bibliotecas Word ainda carregando. Tente novamente em alguns segundos.');
+    return;
+  }
+
+  $('btnDownloadWord').disabled = true;
+  $('log').classList.add('active');
+  setHeaderStatus('Gerando Word…', true);
+  hideWarn();
+
+  try {
+    log('Gerando documento Word…');
+    setStage('Renderizando páginas para Word', 0);
+
+    const buf = await state.translatedBlob.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+
+    const { Document, Packer, Paragraph, ImageRun, AlignmentType,
+            HeadingLevel, TextRun, PageBreak } = docx;
+
+    const children = [];
+
+    // Cabeçalho do documento
+    children.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 120 },
+      children: [
+        new TextRun({
+          text: 'Relatório ProfiTrace — Tradução PT-BR',
+          bold: true, size: 28, color: '0a2d3d',
+        }),
+      ],
+    }));
+    children.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 280 },
+      children: [
+        new TextRun({
+          text: `Arquivo original: ${state.file.name} · Idioma origem: ${(state.detectedLang || '?').toUpperCase()} · ${state.stats.pages} página(s)`,
+          italics: true, size: 18, color: '6f7a84',
+        }),
+      ],
+    }));
+
+    // === Diagnóstico Sênior no Word (se houver) ===
+    if (state.seniorFindings && state.seniorData) {
+      const findings = state.seniorFindings;
+      const data = state.seniorData;
+      const hasCritical = findings.some(f => f.severity === 'critical');
+      const hasWarn = findings.some(f => f.severity === 'warn');
+      const statusLabel = hasCritical ? 'CRÍTICO — AÇÃO IMEDIATA' :
+                          hasWarn ? 'ATENÇÃO — INVESTIGAR' :
+                          'OK — NENHUM DESVIO DETECTADO';
+      const statusColor = hasCritical ? 'c63838' : hasWarn ? 'e07a1f' : '2fa64e';
+
+      children.push(new Paragraph({
+        spacing: { before: 120, after: 100 },
+        children: [
+          new TextRun({ text: 'Diagnóstico Sênior', bold: true, size: 26, color: '0a2d3d' }),
+        ],
+      }));
+      children.push(new Paragraph({
+        spacing: { after: 200 },
+        children: [
+          new TextRun({
+            text: 'Classificação Traffic Light · regras Procentec ProfiTrace 2 Manual v5.0.2 + IEC 61158-3',
+            italics: true, size: 16, color: '6f7a84',
+          }),
+        ],
+      }));
+      children.push(new Paragraph({
+        spacing: { after: 240 },
+        children: [
+          new TextRun({ text: `Status geral: `, bold: true, size: 22 }),
+          new TextRun({ text: statusLabel, bold: true, size: 22, color: statusColor }),
+        ],
+      }));
+
+      // Meta da rede
+      const metaLines = [];
+      if (data.networkName) metaLines.push(`Rede: ${data.networkName}`);
+      if (data.transmissionSpeed) metaLines.push(`Velocidade: ${data.transmissionSpeed}`);
+      if (data.cycleTime) metaLines.push(`Tempo de ciclo: ${data.cycleTime}`);
+      if (data.numMasters) metaLines.push(`Mestres: ${data.numMasters}`);
+      if (data.numSlaves) metaLines.push(`Escravos: ${data.numSlaves}`);
+      if (data.slaves && data.slaves.length > 0) metaLines.push(`Escravos com dados extraídos: ${data.slaves.length}`);
+      if (metaLines.length > 0) {
+        children.push(new Paragraph({
+          spacing: { after: 80 },
+          children: [new TextRun({ text: 'Dados da rede', bold: true, size: 20, color: '0a2d3d' })],
+        }));
+        for (const line of metaLines) {
+          children.push(new Paragraph({
+            spacing: { after: 40 },
+            children: [new TextRun({ text: '  • ' + line, size: 18 })],
+          }));
+        }
+      }
+
+      // Achados
+      if (findings.length === 0) {
+        children.push(new Paragraph({
+          spacing: { before: 200, after: 80 },
+          children: [new TextRun({ text: '✓ Nenhum desvio técnico detectado.', bold: true, size: 20, color: '2fa64e' })],
+        }));
+        children.push(new Paragraph({
+          spacing: { after: 160 },
+          children: [new TextRun({
+            text: 'Nenhum evento crítico, diagnóstico em DX, retry ou anomalia de amplitude foi identificado nos dados extraídos do PDF. Ausência de achado aqui não substitui a análise da cópia fiel do relatório original — campos que o ProfiTrace não exportou para o PDF não puderam ser avaliados.',
+            italics: true, size: 16, color: '6f7a84',
+          })],
+        }));
+      } else {
+        const groups = [
+          { sev: 'critical', label: 'Crítico — ação imediata', color: 'c63838' },
+          { sev: 'warn', label: 'Atenção — investigar', color: 'e07a1f' },
+        ];
+        for (const g of groups) {
+          const items = findings.filter(f => f.severity === g.sev);
+          if (items.length === 0) continue;
+
+          children.push(new Paragraph({
+            spacing: { before: 200, after: 100 },
+            children: [
+              new TextRun({ text: `${g.label} (${items.length})`, bold: true, size: 22, color: g.color }),
+            ],
+          }));
+
+          for (const item of items) {
+            children.push(new Paragraph({
+              spacing: { before: 100, after: 40 },
+              children: [
+                new TextRun({ text: '▸ ', bold: true, size: 20, color: g.color }),
+                new TextRun({ text: item.title, bold: true, size: 20 }),
+              ],
+            }));
+            if (item.detail) {
+              children.push(new Paragraph({
+                spacing: { after: 40 }, indent: { left: 240 },
+                children: [new TextRun({ text: item.detail, size: 17, color: '15202a' })],
+              }));
+            }
+            if (item.interp) {
+              children.push(new Paragraph({
+                spacing: { after: 40 }, indent: { left: 240 },
+                children: [new TextRun({ text: item.interp, italics: true, size: 17, color: '3f4a54' })],
+              }));
+            }
+            children.push(new Paragraph({
+              spacing: { after: 80 }, indent: { left: 240 },
+              children: [
+                new TextRun({ text: 'Fonte: ', bold: true, size: 15, color: '6f7a84' }),
+                new TextRun({ text: item.rule, size: 15, color: '6f7a84' }),
+              ],
+            }));
+          }
+        }
+      }
+
+      // Disclaimer
+      children.push(new Paragraph({
+        spacing: { before: 240, after: 80 },
+        border: { top: { color: 'd6dade', style: 'single', size: 4 } },
+        children: [new TextRun({
+          text: 'Sobre este diagnóstico: os valores foram extraídos do próprio PDF do ProfiTrace. Os limites de classificação vêm do Manual oficial Procentec ProfiTrace 2 (v5.0.2, ago 2016), das normas IEC 61158-3 / EN 50170 e da experiência de campo em redes DP. O app não inventa nenhum dado — campos ausentes no PDF original são omitidos. Esta análise não substitui inspeção em campo nem auditoria por engenheiro PI certificado.',
+          italics: true, size: 14, color: '6f7a84',
+        })],
+      }));
+
+      // Quebra de página antes do relatório completo
+      children.push(new Paragraph({ children: [new PageBreak()] }));
+      children.push(new Paragraph({
+        spacing: { after: 120 },
+        children: [
+          new TextRun({ text: 'Relatório completo traduzido (Cópia Fiel)', bold: true, size: 22, color: '0a2d3d' }),
+        ],
+      }));
+    }
+
+    // Cada página do PDF traduzido vira uma imagem dentro do Word
+    const scale = 2; // 2x para qualidade legível
+    for (let p = 1; p <= pdf.numPages; p++) {
+      setStage(`Renderizando página ${p}/${pdf.numPages}`,
+               5 + (p / pdf.numPages) * 80);
+
+      const page = await pdf.getPage(p);
+      const viewport = page.getViewport({ scale });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      await page.render({ canvasContext: ctx, viewport }).promise;
+
+      // PNG → Uint8Array
+      const dataUrl = canvas.toDataURL('image/png');
+      const base64 = dataUrl.split(',')[1];
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+      // Largura útil A4 com margem normal ≈ 6.3 polegadas = 605 px @ 96 DPI
+      const targetWidth = 605;
+      const aspect = canvas.height / canvas.width;
+      const targetHeight = Math.round(targetWidth * aspect);
+
+      children.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 80 },
+        children: [
+          new ImageRun({
+            data: bytes,
+            transformation: { width: targetWidth, height: targetHeight },
+          }),
+        ],
+      }));
+
+      // Rodapé numérico discreto por página
+      children.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 200 },
+        children: [
+          new TextRun({
+            text: `— Página ${p} de ${pdf.numPages} —`,
+            size: 16, color: '8b949e', italics: true,
+          }),
+        ],
+      }));
+
+      // Page break entre páginas (exceto a última)
+      if (p < pdf.numPages) {
+        children.push(new Paragraph({ children: [new PageBreak()] }));
+      }
+
+      // Libera memória do canvas
+      canvas.width = 0;
+      canvas.height = 0;
+    }
+
+    setStage('Montando arquivo .docx', 90);
+    log('Montando documento Word…');
+
+    const doc = new Document({
+      creator: 'DP·Trace BR',
+      title: 'Relatório ProfiTrace traduzido',
+      description: 'Tradução PT-BR gerada por DP·Trace BR',
+      sections: [{
+        properties: {
+          page: {
+            margin: { top: 720, right: 720, bottom: 720, left: 720 },
+          },
+        },
+        children,
+      }],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const fname = state.file.name.replace(/\.pdf$/i, '_PT-BR.docx');
+    saveAs(blob, fname);
+
+    setStage('Word pronto', 100);
+    log(`Word gerado: ${fname} (${formatBytes(blob.size)})`, 'ok');
+    setHeaderStatus('Word pronto');
+
+  } catch (e) {
+    console.error(e);
+    log('Erro ao gerar Word: ' + e.message, 'err');
+    showWarn('Erro ao gerar Word: ' + e.message);
+    setHeaderStatus('Erro no Word');
+  } finally {
+    $('btnDownloadWord').disabled = false;
+  }
+}
+
 
 function formatBytes(bytes) {
   if (bytes < 1024) return bytes + ' B';
@@ -1347,6 +2531,7 @@ fileInput.addEventListener('change', e => {
 $('btnTranslate').addEventListener('click', runTranslation);
 $('btnReset').addEventListener('click', resetUI);
 $('btnDownload').addEventListener('click', downloadTranslated);
+$('btnDownloadWord').addEventListener('click', generateWord);
 
 // Iniciado
 log('DP·Trace BR pronto. Carregue um PDF para começar.');
