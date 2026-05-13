@@ -457,14 +457,14 @@ footer span{color:var(--pt-mid);font-weight:500}
 </main>
 
 <footer>
-  <span>DP·Trace BR</span> · v0.6.1 · Reset blindado · 100% offline
+  <span>DP·Trace BR</span> · v0.6.2 · Word fix + Reset blindado · 100% offline
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js" id="pdfjsWorker"></script>
 <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <script>
@@ -2302,8 +2302,21 @@ async function generateWord() {
     showWarn('Gere a tradução primeiro.');
     return;
   }
-  if (typeof docx === 'undefined' || typeof saveAs === 'undefined') {
-    showWarn('Bibliotecas Word ainda carregando. Tente novamente em alguns segundos.');
+  // Diagnóstico granular — informar exatamente qual lib falhou
+  if (typeof docx === 'undefined') {
+    showWarn('Biblioteca "docx" não carregou. Verifique sua conexão e recarregue a página (F5).');
+    log('Biblioteca docx ausente — verifique se https://unpkg.com está acessível.', 'err');
+    return;
+  }
+  if (typeof saveAs === 'undefined') {
+    showWarn('Biblioteca "FileSaver" não carregou. Verifique sua conexão e recarregue a página (F5).');
+    log('Biblioteca FileSaver ausente — verifique se cdnjs.cloudflare.com está acessível.', 'err');
+    return;
+  }
+  // Sanity check das APIs específicas que vamos usar
+  if (!docx.Document || !docx.Packer || !docx.ImageRun) {
+    showWarn('Biblioteca docx carregou parcialmente. Recarregue a página (F5).');
+    log('docx.Document/Packer/ImageRun ausentes — versão incompatível?', 'err');
     return;
   }
 
