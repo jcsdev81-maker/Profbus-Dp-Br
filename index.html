@@ -457,7 +457,7 @@ footer span{color:var(--pt-mid);font-weight:500}
 </main>
 
 <footer>
-  <span>DP·Trace BR</span> · v0.6.2 · Word fix + Reset blindado · 100% offline
+  <span>DP·Trace BR</span> · v0.6.3 · Falso positivo corrigido · 100% offline
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1880,6 +1880,41 @@ function findSubsectionEntries(phrases, sectionLabels) {
   return null; // seção não encontrada — diferente de "encontrada e vazia"
 }
 
+/* Verifica se uma subseção 6.x do "Tested subjects" tem evidência CONCRETA
+   de problema (Address: N nas linhas seguintes), OU se está marcada como
+   vazia (palavras "None", "Aucun", "Ninguno" logo abaixo do título).
+   IMPORTANTE: o ProfiTrace SEMPRE imprime o título de todas as subseções 6.x,
+   mesmo quando não há ocorrência — então a presença do título NÃO é evidência
+   de problema. Esta função evita falso positivo.
+
+   Retorna:
+   - true  → há conteúdo concreto (Address: N) na subseção
+   - false → seção existe mas está vazia OU marcada como "None"
+   - null  → seção não foi sequer encontrada no PDF
+*/
+function subsectionHasContent(phrases, sectionLabels) {
+  for (let i = 0; i < phrases.length; i++) {
+    const stripped = phrases[i].replace(/^\d+(?:\.\d+)*\.?\s+/, '');
+    if (sectionLabels.some(l => stripped.startsWith(l))) {
+      // Olha as próximas linhas até a próxima seção numerada
+      for (let j = i + 1; j < phrases.length && j < i + 30; j++) {
+        const next = phrases[j];
+        // Outra seção numerada → parou
+        if (/^\d+(?:\.\d+)*\.?\s+\S/.test(next)) {
+          const nextStripped = next.replace(/^\d+(?:\.\d+)*\.?\s+/, '');
+          if (!sectionLabels.some(l => nextStripped.startsWith(l))) break;
+        }
+        // Evidência concreta de dispositivo
+        if (/^Address:\s*\d+/i.test(next)) return true;
+        // Marcação explícita de "vazio" do ProfiTrace
+        if (/^(None|Aucun|Aucune|Ninguno|Ninguna)\s*$/i.test(next)) return false;
+      }
+      return false; // seção encontrada, sem evidência de conteúdo
+    }
+  }
+  return null;
+}
+
 /* Parser de tensão a partir de string como "Min: 6.07 V, Max: 6.16 V, Last: 6.14 V"
    ou "6.07 V" — devolve { min, max, last, single } com null para ausentes. */
 function parseVoltageRange(str) {
@@ -2153,12 +2188,12 @@ function runSeniorDiagnosis(pages, lang, myGen) {
         'The watchdog on the following slaves are not enabled',
         'The watchdog on the following slaves is not enabled',
       ]),
-      address0Found: !!phrases.find(p =>
-        p.replace(/^\d+(?:\.\d+)*\.?\s+/, '').startsWith('Slave or class 1 master found on address 0')
-      ),
-      address126Found: !!phrases.find(p =>
-        p.replace(/^\d+(?:\.\d+)*\.?\s+/, '').startsWith('Device found on reserved address 126')
-      ),
+      address0Found: subsectionHasContent(phrases, [
+        'Slave or class 1 master found on address 0',
+      ]) === true,
+      address126Found: subsectionHasContent(phrases, [
+        'Device found on reserved address 126',
+      ]) === true,
       slaves: extractSlaveDetails(phrases),
     };
 
