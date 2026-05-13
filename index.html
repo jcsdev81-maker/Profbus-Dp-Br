@@ -457,7 +457,7 @@ footer span{color:var(--pt-mid);font-weight:500}
 </main>
 
 <footer>
-  <span>DP·Trace BR</span> · v0.6 · Tradução + Diagnóstico Sênior · 100% offline
+  <span>DP·Trace BR</span> · v0.6.1 · Reset blindado · 100% offline
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1148,8 +1148,12 @@ const state = {
   pageCount: 0,
   translatedBlob: null,
   translatedName: null,
+  translatedBlobUrl: null,  // URL.createObjectURL ativo — para revoke explícito
   seniorData: null,
   seniorFindings: null,
+  // Token de geração: incrementa a cada reset. Operações async checam se ainda
+  // estão na geração atual antes de escrever no state ou na UI.
+  generation: 0,
   stats: {
     matchesExact: 0,
     matchesPattern: 0,
@@ -1204,37 +1208,87 @@ function hideWarn() {
   $('warnBanner').textContent = '';
 }
 
+/* ----------------------------------------------------------------------------
+   RESET — limpeza completa entre análises
+   ----------------------------------------------------------------------------
+   Estratégia:
+   1. Incrementa `generation` — qualquer operação async em curso será descartada
+      ao retornar (vê que o token mudou e não escreve mais no state/UI).
+   2. Revoga URLs ativos do URL.createObjectURL (prevenir vazamento de blob).
+   3. Limpa TODOS os campos do state (incluindo blobs grandes — força GC).
+   4. Limpa TODA a UI: log, summary, senior, banners, status.
+   5. Reseta o input de arquivo (permite re-upload do mesmo nome).
+   6. Sugere garbage collection (no Chrome só funciona com --expose-gc).
+   ---------------------------------------------------------------------------- */
+
 function resetUI() {
+  // 1) Invalida operações async em curso
+  state.generation++;
+
+  // 2) Revoga Blob URL ativo (criado em downloadTranslated)
+  if (state.translatedBlobUrl) {
+    try { URL.revokeObjectURL(state.translatedBlobUrl); } catch (e) {}
+    state.translatedBlobUrl = null;
+  }
+
+  // 3) Limpa state — explicitamente para liberar buffers grandes
   state.file = null;
-  state.fileBuffer = null;
+  state.fileBuffer = null;       // ArrayBuffer do PDF original (pode ser MB)
   state.detectedLang = null;
   state.pageCount = 0;
-  state.translatedBlob = null;
+  state.translatedBlob = null;   // Blob do PDF traduzido (pode ser MB)
   state.translatedName = null;
+  state.seniorData = null;
+  state.seniorFindings = null;
   state.stats = { matchesExact:0, matchesPattern:0, matchesShort:0, untranslated:0, pages:0 };
 
+  // 4) UI — área de upload
   $('fileName').style.display = 'none';
   $('fileName').textContent = '';
   $('drop').classList.remove('has-file');
+  $('drop').classList.remove('dragover');
   $('dropTitle').textContent = 'Arraste o PDF aqui ou toque para escolher';
   $('dropHint').textContent = 'Aceita PDFs do ProfiTrace em inglês, francês ou espanhol';
+
+  // UI — botões
   $('btnTranslate').disabled = true;
   $('btnDownload').style.display = 'none';
   $('btnDownloadWord').style.display = 'none';
+  $('btnDownloadWord').disabled = false;  // pode ter ficado disabled durante geração de Word
+
+  // UI — log
   $('log').classList.remove('active');
   $('logBody').innerHTML = '';
   $('logFill').style.width = '0%';
+  $('logStage').textContent = '';
+  $('logTitle').textContent = 'Processando…';
+
+  // UI — resumo
   $('summary').classList.remove('active');
   $('summaryGrid').innerHTML = '';
   $('summaryNote').innerHTML = '';
+
+  // UI — diagnóstico sênior
   $('senior').classList.remove('active');
   $('seniorMeta').innerHTML = '';
   $('seniorFindings').innerHTML = '';
-  state.seniorData = null;
-  state.seniorFindings = null;
+  $('seniorBadge').className = 'senior-badge senior-status-ok';
+  $('seniorBadgeText').textContent = '—';
+
+  // UI — avisos e header status
   hideWarn();
-  setHeaderStatus('Pronto');
+  setHeaderStatus('Pronto');           // remove .processing
+  document.body.classList.remove('processing');  // garantia extra
+
+  // 5) Input de arquivo — limpar permite re-upload do mesmo nome
   $('fileInput').value = '';
+
+  // 6) Sugestão de GC (best-effort, navegador decide)
+  if (typeof window !== 'undefined' && window.gc) {
+    try { window.gc(); } catch (e) {}
+  }
+
+  log('Pronto para novo relatório.');
 }
 
 /* ----------------------------------------------------------------------------
@@ -1644,9 +1698,15 @@ async function handleFile(file) {
 
 async function runTranslation() {
   if (!state.fileBuffer) return;
+  // Captura o token de geração no início. Se reset for clicado durante a
+  // execução, o token muda e abortamos sem contaminar a UI.
+  const myGen = state.generation;
+  const isStale = () => state.generation !== myGen;
+
   $('btnTranslate').disabled = true;
   $('log').classList.add('active');
   $('summary').classList.remove('active');
+  $('senior').classList.remove('active');
   hideWarn();
   setHeaderStatus('Processando…', true);
 
@@ -1654,16 +1714,19 @@ async function runTranslation() {
     setStage('Lendo PDF', 5);
     log('Carregando PDF original…');
     const pdfDocJs = await pdfjsLib.getDocument({ data: state.fileBuffer.slice(0) }).promise;
+    if (isStale()) return;  // reset durante o load — descarta tudo
     state.pageCount = pdfDocJs.numPages;
     state.stats.pages = pdfDocJs.numPages;
     log(`PDF carregado: ${pdfDocJs.numPages} página(s)`, 'ok');
 
     setStage('Extraindo texto', 20);
     const pages = await extractPagesWithCoords(pdfDocJs);
+    if (isStale()) return;
     const allText = pages.flatMap(p => p.lines.map(l => l.str)).join('\n');
 
     setStage('Detectando idioma', 35);
     const lang = detectLanguage(allText);
+    if (isStale()) return;
     state.detectedLang = lang;
     if (!lang) {
       log('Não foi possível detectar idioma do relatório', 'err');
@@ -1699,6 +1762,7 @@ async function runTranslation() {
     setStage('Aplicando overlay no PDF', 75);
     log('Aplicando camada de tradução…');
     const blob = await applyOverlay(state.fileBuffer, subsByPage);
+    if (isStale()) return;
     state.translatedBlob = blob;
 
     const base = state.file.name.replace(/\.pdf$/i, '');
@@ -1713,7 +1777,7 @@ async function runTranslation() {
     setHeaderStatus('Tradução pronta');
 
     showSummary(lang, totalSubs);
-    runSeniorDiagnosis(pages, lang);
+    runSeniorDiagnosis(pages, lang, myGen);
 
   } catch (e) {
     console.error(e);
@@ -2039,7 +2103,12 @@ function classifyDiagnosis(data) {
 }
 
 /* Pipeline completo */
-function runSeniorDiagnosis(pages, lang) {
+function runSeniorDiagnosis(pages, lang, myGen) {
+  // myGen: token de geração herdado de runTranslation. Permite descartar
+  // resultado se o usuário clicou em Limpar durante a análise.
+  const isStale = () => (myGen !== undefined && state.generation !== myGen);
+  if (isStale()) return;
+
   // Só roda em EN — extração estrutural usa rótulos em inglês (forma canônica
   // do ProfiTrace, presente em todos os relatórios independente do idioma).
   // Para FR/ES, faríamos um mapeamento reverso primeiro — não implementado aqui
@@ -2094,6 +2163,7 @@ function runSeniorDiagnosis(pages, lang) {
     };
 
     const findings = classifyDiagnosis(data);
+    if (isStale()) return;  // reset durante análise — não escreve no state
     state.seniorData = data;
     state.seniorFindings = findings;
 
@@ -2196,14 +2266,25 @@ function showSummary(lang, totalSubs) {
 
 function downloadTranslated() {
   if (!state.translatedBlob || !state.translatedName) return;
+  // Revoga URL anterior se existir (download clicado várias vezes)
+  if (state.translatedBlobUrl) {
+    try { URL.revokeObjectURL(state.translatedBlobUrl); } catch (e) {}
+  }
   const url = URL.createObjectURL(state.translatedBlob);
+  state.translatedBlobUrl = url;
   const a = document.createElement('a');
   a.href = url;
   a.download = state.translatedName;
   document.body.appendChild(a);
   a.click();
+  // Revoga após 100ms, mas só se ainda for o mesmo URL (resetUI pode ter
+  // limpado antes) e ainda for a mesma geração.
+  const myGen = state.generation;
   setTimeout(() => {
-    URL.revokeObjectURL(url);
+    if (state.generation === myGen && state.translatedBlobUrl === url) {
+      try { URL.revokeObjectURL(url); } catch (e) {}
+      state.translatedBlobUrl = null;
+    }
     a.remove();
   }, 100);
 }
@@ -2226,6 +2307,10 @@ async function generateWord() {
     return;
   }
 
+  // Captura geração — abortar se reset for clicado durante a renderização
+  const myGen = state.generation;
+  const isStale = () => state.generation !== myGen;
+
   $('btnDownloadWord').disabled = true;
   $('log').classList.add('active');
   setHeaderStatus('Gerando Word…', true);
@@ -2236,7 +2321,9 @@ async function generateWord() {
     setStage('Renderizando páginas para Word', 0);
 
     const buf = await state.translatedBlob.arrayBuffer();
+    if (isStale()) return;
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    if (isStale()) return;
 
     const { Document, Packer, Paragraph, ImageRun, AlignmentType,
             HeadingLevel, TextRun, PageBreak } = docx;
@@ -2403,6 +2490,10 @@ async function generateWord() {
     // Cada página do PDF traduzido vira uma imagem dentro do Word
     const scale = 2; // 2x para qualidade legível
     for (let p = 1; p <= pdf.numPages; p++) {
+      if (isStale()) {
+        log('Geração de Word cancelada (limpeza solicitada).', 'warn');
+        return;
+      }
       setStage(`Renderizando página ${p}/${pdf.numPages}`,
                5 + (p / pdf.numPages) * 80);
 
@@ -2417,6 +2508,11 @@ async function generateWord() {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       await page.render({ canvasContext: ctx, viewport }).promise;
+      if (isStale()) {
+        canvas.width = 0;
+        canvas.height = 0;
+        return;
+      }
 
       // PNG → Uint8Array
       const dataUrl = canvas.toDataURL('image/png');
@@ -2481,6 +2577,7 @@ async function generateWord() {
     });
 
     const blob = await Packer.toBlob(doc);
+    if (isStale()) return;  // reset durante o packing — não dispara o save
     const fname = state.file.name.replace(/\.pdf$/i, '_PT-BR.docx');
     saveAs(blob, fname);
 
@@ -2489,12 +2586,17 @@ async function generateWord() {
     setHeaderStatus('Word pronto');
 
   } catch (e) {
+    if (isStale()) return;  // não exibe erro se foi por causa do reset
     console.error(e);
     log('Erro ao gerar Word: ' + e.message, 'err');
     showWarn('Erro ao gerar Word: ' + e.message);
     setHeaderStatus('Erro no Word');
   } finally {
-    $('btnDownloadWord').disabled = false;
+    // Só reabilita o botão se a geração ainda é a atual; se reset foi
+    // clicado, o próprio resetUI já cuidou disso.
+    if (state.generation === myGen) {
+      $('btnDownloadWord').disabled = false;
+    }
   }
 }
 
