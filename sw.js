@@ -7,7 +7,7 @@
    Versionar CACHE_NAME a cada release para invalidar o cache antigo.
    ============================================================================ */
 
-const CACHE_VERSION = 'v0.6.3';
+const CACHE_VERSION = 'v0.6.4';
 const CACHE_NAME    = `dptrace-br-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `dptrace-br-runtime-${CACHE_VERSION}`;
 
