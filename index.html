@@ -457,7 +457,7 @@ footer span{color:var(--pt-mid);font-weight:500}
 </main>
 
 <footer>
-  <span>DP·Trace BR</span> · v0.6.3 · Falso positivo corrigido · 100% offline
+  <span>DP·Trace BR</span> · v0.6.4 · Parser inline corrigido · 100% offline
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1858,59 +1858,114 @@ function findLabelValue(phrases, labels) {
 }
 
 /* Conta quantos blocos "Address: N" aparecem após cada label de subseção 6.x */
+/* Extrai a lista de endereços de uma subseção 6.x.
+   Dois formatos do ProfiTrace:
+   (a) inline na linha do título: "6.6 Slaves that caused syncs: 3, 4, 6, 7, 22"
+   (b) em blocos nas linhas seguintes: "Address: 13" repetido
+   Devolve array de inteiros (vazio = seção existe mas sem ocorrências)
+   ou null (seção não encontrada). */
 function findSubsectionEntries(phrases, sectionLabels) {
+  const EMPTY_RE = /^(none|aucun|aucune|ninguno|ninguna|nenhum|nenhuma)$/i;
+
   for (let i = 0; i < phrases.length; i++) {
     const stripped = phrases[i].replace(/^\d+(?:\.\d+)*\.?\s+/, '');
-    if (sectionLabels.some(l => stripped.startsWith(l))) {
-      // Conta entries "Address: N" até a próxima seção 6.x ou seção numerada
-      const addrs = [];
-      for (let j = i + 1; j < phrases.length; j++) {
-        const next = phrases[j];
-        if (/^\d+(?:\.\d+)*\.?\s+\S/.test(next) && j > i + 1) {
-          // Outra subseção começou — só para se for diferente da atual
-          const nextStripped = next.replace(/^\d+(?:\.\d+)*\.?\s+/, '');
-          if (!sectionLabels.some(l => nextStripped.startsWith(l))) break;
+    const matchLabel = sectionLabels.find(l => stripped.startsWith(l));
+    if (!matchLabel) continue;
+
+    const addrs = [];
+
+    // (a) Endereços inline, após o label na mesma linha
+    let rest = stripped.slice(matchLabel.length).replace(/^[:\s]+/, '').trim();
+    let inlineList = false;
+    if (rest && !EMPTY_RE.test(rest)) {
+      const listMatch = rest.match(/^[\d,\s]+/);
+      if (listMatch) {
+        for (const n of listMatch[0].match(/\d+/g) || []) {
+          addrs.push(parseInt(n, 10));
         }
-        const m = next.match(/^Address:\s*(\d+)/i);
-        if (m) addrs.push(parseInt(m[1], 10));
+        inlineList = true;
       }
-      return addrs;
     }
+
+    // (a.2) Linhas de CONTINUAÇÃO da lista inline — o ProfiTrace quebra listas
+    // longas em várias linhas (ex.: "42, 48, 64, 65, 79"). Captura enquanto a
+    // linha for puramente numérica (dígitos, vírgulas, espaços).
+    let contIdx = i + 1;
+    if (inlineList) {
+      for (; contIdx < phrases.length; contIdx++) {
+        const cont = phrases[contIdx].trim();
+        if (/^[\d,\s]+$/.test(cont) && /\d/.test(cont)) {
+          for (const n of cont.match(/\d+/g) || []) addrs.push(parseInt(n, 10));
+        } else {
+          break; // linha não-numérica encerra a lista
+        }
+      }
+    }
+
+    // (b) Blocos "Address: N" em linhas seguintes (formato alternativo)
+    for (let j = i + 1; j < phrases.length; j++) {
+      const next = phrases[j].trim();
+      if (/^\d+(?:\.\d+)*\.?\s+\S/.test(next) && j > i + 1) {
+        const nextStripped = next.replace(/^\d+(?:\.\d+)*\.?\s+/, '');
+        if (!sectionLabels.some(l => nextStripped.startsWith(l))) break;
+      }
+      const m = next.match(/^Address:\s*(\d+)/i);
+      if (m) addrs.push(parseInt(m[1], 10));
+    }
+
+    // Deduplica preservando ordem
+    return [...new Set(addrs)];
   }
-  return null; // seção não encontrada — diferente de "encontrada e vazia"
+  return null; // seção não encontrada
 }
 
 /* Verifica se uma subseção 6.x do "Tested subjects" tem evidência CONCRETA
-   de problema (Address: N nas linhas seguintes), OU se está marcada como
-   vazia (palavras "None", "Aucun", "Ninguno" logo abaixo do título).
-   IMPORTANTE: o ProfiTrace SEMPRE imprime o título de todas as subseções 6.x,
-   mesmo quando não há ocorrência — então a presença do título NÃO é evidência
-   de problema. Esta função evita falso positivo.
+   de problema. O ProfiTrace SEMPRE imprime o título de todas as subseções 6.x,
+   mesmo sem ocorrência — então a presença do título NÃO é evidência de problema.
+
+   Dois formatos possíveis no PDF:
+   (a) tudo numa linha: "6.4 Device found on reserved address 126: None"
+       ou "6.6 Slaves that caused syncs: 3, 4, 6, 7, 22, 23"
+   (b) título numa linha, conteúdo em linhas seguintes ("Address: N")
 
    Retorna:
-   - true  → há conteúdo concreto (Address: N) na subseção
-   - false → seção existe mas está vazia OU marcada como "None"
-   - null  → seção não foi sequer encontrada no PDF
+   - true  → há evidência concreta (números de endereço listados)
+   - false → seção existe mas vazia / marcada "None"/"Nenhum"/"Aucun"/"Ninguno"
+   - null  → seção não encontrada no PDF
 */
 function subsectionHasContent(phrases, sectionLabels) {
+  // Regex de "marcador de vazio" em EN/FR/ES/PT (PT aparece em PDFs já traduzidos)
+  const EMPTY_RE = /^(none|aucun|aucune|ninguno|ninguna|nenhum|nenhuma)$/i;
+
   for (let i = 0; i < phrases.length; i++) {
     const stripped = phrases[i].replace(/^\d+(?:\.\d+)*\.?\s+/, '');
-    if (sectionLabels.some(l => stripped.startsWith(l))) {
-      // Olha as próximas linhas até a próxima seção numerada
-      for (let j = i + 1; j < phrases.length && j < i + 30; j++) {
-        const next = phrases[j];
-        // Outra seção numerada → parou
-        if (/^\d+(?:\.\d+)*\.?\s+\S/.test(next)) {
-          const nextStripped = next.replace(/^\d+(?:\.\d+)*\.?\s+/, '');
-          if (!sectionLabels.some(l => nextStripped.startsWith(l))) break;
-        }
-        // Evidência concreta de dispositivo
-        if (/^Address:\s*\d+/i.test(next)) return true;
-        // Marcação explícita de "vazio" do ProfiTrace
-        if (/^(None|Aucun|Aucune|Ninguno|Ninguna)\s*$/i.test(next)) return false;
-      }
-      return false; // seção encontrada, sem evidência de conteúdo
+    const matchLabel = sectionLabels.find(l => stripped.startsWith(l));
+    if (!matchLabel) continue;
+
+    // (a) Analisa o que vem DEPOIS do label, na mesma linha
+    let rest = stripped.slice(matchLabel.length).trim();
+    // remove ":" inicial se houver
+    rest = rest.replace(/^[:\s]+/, '').trim();
+    if (rest) {
+      // Marcador de vazio explícito
+      if (EMPTY_RE.test(rest)) return false;
+      // Lista de endereços (ex.: "3, 4, 6, 7") ou "Address: N"
+      if (/\d/.test(rest)) return true;
+      // Texto não-numérico qualquer (ex.: nota explicativa) — inconclusivo,
+      // segue para checar linhas seguintes
     }
+
+    // (b) Analisa linhas seguintes até a próxima seção numerada
+    for (let j = i + 1; j < phrases.length && j < i + 30; j++) {
+      const next = phrases[j].trim();
+      if (/^\d+(?:\.\d+)*\.?\s+\S/.test(next)) {
+        const nextStripped = next.replace(/^\d+(?:\.\d+)*\.?\s+/, '');
+        if (!sectionLabels.some(l => nextStripped.startsWith(l))) break;
+      }
+      if (/^Address:\s*\d+/i.test(next)) return true;
+      if (EMPTY_RE.test(next)) return false;
+    }
+    return false; // seção encontrada, sem evidência de conteúdo
   }
   return null;
 }
